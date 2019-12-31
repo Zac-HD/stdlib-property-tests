@@ -30,6 +30,22 @@ in this repository to be used upstream by the CPython project, other
 implementations of Python, and the Hypothesis project and ecosystem.
 
 
+# Workflow
+To run the tests against the current version of Python:
+
+- `pip install -r requirements.txt` (or `hypothesis hypothesmith`)
+- `python -m unittest`
+
+For development, we use [`tox`](https://tox.readthedocs.io/en/latest/)
+to manage an extensive suite of auto-formatters and linters, so:
+
+- `pip install tox`
+- `tox`
+
+will set up a virtualenv for you, install everything, and finally run
+the formatters, linters, and test suite.
+
+
 ## Contributors
 <!--- Add yourself to the end of the list! -->
 - [Zac Hatfield-Dodds](https://zhd.dev)

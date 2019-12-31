@@ -1,0 +1,14 @@
+language: python
+python:
+  # Targeting only features and bugfix branches: see
+  # https://devguide.python.org/#status-of-python-branches
+  - "3.7"
+  - "3.7-dev"
+  - "3.8"
+  - "3.8-dev"
+  - "nightly"
+install:
+  - pip install tox
+script:
+  - tox --recreate
+  - git diff --exit-code
