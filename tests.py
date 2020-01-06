@@ -4,7 +4,7 @@ import tokenize
 import unittest
 
 import hypothesmith
-from hypothesis import HealthCheck, example, given, reject, settings
+from hypothesis import HealthCheck, example, given, reject, settings, strategies as st
 
 # Used to mark tests which generate arbitrary source code,
 # because that's a relatively expensive thing to get right.
@@ -23,6 +23,15 @@ class TestAST(unittest.TestCase):
         unparsed = ast.unparse(first)
         second = ast.parse(unparsed)
         assert ast.dump(first) == ast.dump(second)
+
+
+class TestBuiltins(unittest.TestCase):
+    @unittest.expectedFailure
+    @given(st.integers(min_value=0))
+    def test_len_of_range(self, n):
+        seq = range(n)
+        length = len(seq)  # OverflowError: Python int too large to convert to C ssize_t
+        self.assertEqual(length, n)
 
 
 def fixup(s):
