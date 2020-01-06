@@ -1,12 +1,12 @@
 import ast
-import imghdr
 import io
-import quopri
 import tokenize
 import unittest
 
 import hypothesmith
-from hypothesis import HealthCheck, example, given, reject, settings, strategies as st
+from hypothesis import HealthCheck, example, given, reject, settings
+
+# TODO: https://docs.python.org/3/library/2to3.html
 
 # Used to mark tests which generate arbitrary source code,
 # because that's a relatively expensive thing to get right.
@@ -25,21 +25,6 @@ class TestAST(unittest.TestCase):
         unparsed = ast.unparse(first)
         second = ast.parse(unparsed)
         assert ast.dump(first) == ast.dump(second)
-
-
-class TestBuiltins(unittest.TestCase):
-    @unittest.expectedFailure
-    @given(st.integers(min_value=0))
-    def test_len_of_range(self, n):
-        seq = range(n)
-        length = len(seq)  # OverflowError: Python int too large to convert to C ssize_t
-        self.assertEqual(length, n)
-
-
-class TestImghdr(unittest.TestCase):
-    @given(st.binary())
-    def test_imghdr_what(self, payload):
-        imghdr.what("<ignored filename>", h=payload)
 
 
 def fixup(s):
@@ -94,11 +79,3 @@ class TestTokenize(unittest.TestCase):
         )
         # It would be nice if the round-tripped string stabilised...
         # self.assertEqual(outstring, tokenize.untokenize(output))
-
-
-class TestQuodpri(unittest.TestCase):
-    @given(payload=st.binary(), quotetabs=st.booleans(), header=st.booleans())
-    def test_quodpri_encode_decode_round_trip(self, payload, quotetabs, header):
-        encoded = quopri.encodestring(payload, quotetabs=quotetabs, header=header)
-        decoded = quopri.decodestring(encoded, header=header)
-        self.assertEqual(payload, decoded)
