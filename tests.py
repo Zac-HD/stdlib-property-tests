@@ -1,4 +1,5 @@
 import ast
+import imghdr
 import io
 import tokenize
 import unittest
@@ -32,6 +33,12 @@ class TestBuiltins(unittest.TestCase):
         seq = range(n)
         length = len(seq)  # OverflowError: Python int too large to convert to C ssize_t
         self.assertEqual(length, n)
+
+
+class TestImghdr(unittest.TestCase):
+    @given(st.binary())
+    def test_imghdr_what(self, payload):
+        imghdr.what("<ignored filename>", h=payload)
 
 
 def fixup(s):
