@@ -6,8 +6,6 @@ import unittest
 import hypothesmith
 from hypothesis import HealthCheck, example, given, reject, settings
 
-# TODO: https://docs.python.org/3/library/2to3.html
-
 # Used to mark tests which generate arbitrary source code,
 # because that's a relatively expensive thing to get right.
 settings.register_profile(
@@ -25,6 +23,11 @@ class TestAST(unittest.TestCase):
         unparsed = ast.unparse(first)
         second = ast.parse(unparsed)
         assert ast.dump(first) == ast.dump(second)
+
+
+class TestLib2to3(unittest.TestCase):
+    # TODO: https://docs.python.org/3/library/2to3.html
+    pass
 
 
 def fixup(s):

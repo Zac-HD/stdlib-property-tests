@@ -1,11 +1,12 @@
 import imghdr
 import unittest
 
-from hypothesis import given, strategies as st
+from hypothesis import example, given, strategies as st
 
 
 class TestBuiltins(unittest.TestCase):
     @unittest.expectedFailure
+    @example(n=2 ** 63)
     @given(st.integers(min_value=0))
     def test_len_of_range(self, n):
         seq = range(n)
