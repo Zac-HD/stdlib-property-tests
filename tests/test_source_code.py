@@ -1,10 +1,11 @@
 import ast
+import dis
 import io
 import tokenize
 import unittest
 
 import hypothesmith
-from hypothesis import HealthCheck, example, given, reject, settings
+from hypothesis import HealthCheck, example, given, reject, settings, strategies as st
 
 # Used to mark tests which generate arbitrary source code,
 # because that's a relatively expensive thing to get right.
@@ -23,6 +24,26 @@ class TestAST(unittest.TestCase):
         unparsed = ast.unparse(first)
         second = ast.parse(unparsed)
         assert ast.dump(first) == ast.dump(second)
+
+
+class TestDis(unittest.TestCase):
+    @given(
+        code_object=hypothesmith.from_grammar().map(
+            lambda s: compile(s, "<string>", "exec")
+        ),
+        first_line=st.none() | st.integers(0, 100),
+        current_offset=st.none() | st.integers(0, 100),
+    )
+    @settings.get_profile("slow")
+    def test_disassembly(self, code_object, first_line, current_offset):
+        """Exercise the dis module."""
+        # TODO: what other properties of this module should we test?
+        bcode = dis.Bytecode(
+            code_object, first_line=first_line, current_offset=current_offset
+        )
+        self.assertIs(code_object, bcode.codeobj)
+        for inst in bcode:
+            self.assertIsInstance(inst, dis.Instruction)
 
 
 class TestLib2to3(unittest.TestCase):
