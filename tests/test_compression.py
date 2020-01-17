@@ -2,7 +2,9 @@ import bz2
 import gzip
 import unittest
 
-from hypothesis import given, strategies as st
+from hypothesis import HealthCheck, given, settings, strategies as st
+
+no_health_checks = settings(suppress_health_check=HealthCheck.all())
 
 
 class TestBz2(unittest.TestCase):
@@ -17,6 +19,7 @@ class TestBz2(unittest.TestCase):
         compressed = b"".join(c.compress(p) for p in payloads) + c.flush()
         self.assertEqual(compressed, bz2.compress(b"".join(payloads), compresslevel))
 
+    @no_health_checks
     @given(payload=st.binary(), compresslevel=st.integers(1, 9), data=st.data())
     def test_bz2_incremental_decompress_eq_oneshot(self, payload, compresslevel, data):
         compressed = bz2.compress(payload, compresslevel=compresslevel)
