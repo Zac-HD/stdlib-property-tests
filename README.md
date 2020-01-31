@@ -49,3 +49,4 @@ the formatters, linters, and test suite.
 ## Contributors
 <!--- Add yourself to the end of the list! -->
 - [Zac Hatfield-Dodds](https://zhd.dev)
+- [Paul Ganssle](https://ganssle.io)
