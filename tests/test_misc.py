@@ -1,17 +1,22 @@
 import imghdr
+import sys
 import unittest
 
 from hypothesis import example, given, strategies as st
 
 
 class TestBuiltins(unittest.TestCase):
-    @unittest.expectedFailure
     @example(n=2 ** 63)
     @given(st.integers(min_value=0))
     def test_len_of_range(self, n):
         seq = range(n)
-        length = len(seq)  # OverflowError: Python int too large to convert to C ssize_t
-        self.assertEqual(length, n)
+        try:
+            length = len(seq)
+        except OverflowError:
+            # len() internally casts to ssize_t, so we expect overflow here.
+            self.assertGreater(n, sys.maxsize)
+        else:
+            self.assertEqual(length, n)
 
 
 class TestImghdr(unittest.TestCase):
