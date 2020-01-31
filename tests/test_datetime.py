@@ -25,3 +25,4 @@ class TestDatetime(unittest.TestCase):
 
     # TODO: https://docs.python.org/3/library/datetime.html
     # e.g. round-trip for datetime.isocalendar and other pairs
+    # Use exhaustive testing rather than Hypothesis where possible!
