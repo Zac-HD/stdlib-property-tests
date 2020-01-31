@@ -50,3 +50,12 @@ the formatters, linters, and test suite.
 <!--- Add yourself to the end of the list! -->
 - [Zac Hatfield-Dodds](https://zhd.dev)
 - [Paul Ganssle](https://ganssle.io)
+
+
+## Trophy Case
+Bugs found via this specific project:
+
+- [BPO-38953](https://bugs.python.org/issue38953) `tokenize.tokenize` ->
+  `tokenize.untokenize` does not round-trip as documented.
+  Nor, for that matter, do the `tokenize`/`untokenize` functions in
+  `lib2to3.pgen.tokenize`.

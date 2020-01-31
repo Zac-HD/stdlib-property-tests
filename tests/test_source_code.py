@@ -1,6 +1,7 @@
 import ast
 import dis
 import io
+import lib2to3.pgen2.tokenize as lib2to3_tokenize
 import tokenize
 import unittest
 
@@ -46,14 +47,41 @@ class TestDis(unittest.TestCase):
             self.assertIsInstance(inst, dis.Instruction)
 
 
-class TestLib2to3(unittest.TestCase):
-    # TODO: https://docs.python.org/3/library/2to3.html
-    pass
-
-
 def fixup(s):
     """Avoid known issues with tokenize() by editing the string."""
+    # Note that "passes after fixup" is a much weaker claim than "passes",
+    # so ideally we would fix the tokenize bugs and then remove this.
     return "".join(x for x in s if x.isprintable()).strip().strip("\\").strip() + "\n"
+
+
+class TestLib2to3(unittest.TestCase):
+    # TODO: https://docs.python.org/3/library/2to3.html
+
+    @unittest.expectedFailure
+    @example("#")
+    @example("\n\\\n")
+    @example("#\n\x0cpass#\n")
+    @given(source_code=hypothesmith.from_grammar().map(fixup).filter(str.strip))
+    @settings.get_profile("slow")
+    def test_tokenize_round_trip(self, source_code):
+        tokens = []
+
+        def token_eater(*args):
+            tokens.append(args)
+
+        # Round-trip invariant for full input:
+        #       Untokenized source will match input source exactly
+        lib2to3_tokenize.tokenize(io.StringIO(source_code).readline, token_eater)
+        full = lib2to3_tokenize.untokenize(tokens)
+        self.assertEqual(source_code, full)
+
+        # Round-trip invariant for limited input:
+        #       Output text will tokenize the back to the input
+        part_tokens = [t[:2] for t in tokens]
+        partial = lib2to3_tokenize.untokenize(part_tokens)
+        del tokens[:]
+        lib2to3_tokenize.tokenize(io.StringIO(partial).readline, token_eater)
+        self.assertEqual(part_tokens, [t[:2] for t in tokens])
 
 
 class TestTokenize(unittest.TestCase):
