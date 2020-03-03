@@ -1,12 +1,12 @@
 import marshal
 import unittest
 
-from hypothesis import example, given, strategies as st
+from hypothesis import given, strategies as st
 
 simple_immutables = (
     st.integers()
     | st.booleans()
-    | st.floats(allow_nan=False)
+    | st.floats(allow_nan=False)  # NaNs compare unequal to themselves
     | st.complex_numbers(allow_nan=False)
     | st.just(None)
     | st.binary()
