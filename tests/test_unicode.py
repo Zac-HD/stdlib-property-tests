@@ -29,6 +29,8 @@ compositions = [
 class TestUnicode(unittest.TestCase):
     @given(s=st.text(), comps=st.sampled_from(compositions))
     def test_composition(self, s, comps):
+        # see issues https://foss.heptapod.net/pypy/pypy/issues/2289
+        # and https://bugs.python.org/issue26917
         norm1, norm2, norm3 = comps
         self.assertEqual(normalize(norm2, normalize(norm1, s)), normalize(norm3, s))
 
