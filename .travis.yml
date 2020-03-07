@@ -7,9 +7,13 @@ python:
   - "3.8"
   - "3.8-dev"
   - "nightly"
-  - "pypy3"
 install:
   - pip install tox
 script:
   - tox --recreate
   - git diff --exit-code
+# pypy3 is currently Python 3.6, so skip the formatting checks
+jobs:
+  include:
+  - python: "pypy3"
+    script: "tox -re test"

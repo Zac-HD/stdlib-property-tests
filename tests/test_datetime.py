@@ -13,6 +13,7 @@ class TestDatetime(unittest.TestCase):
     # Surrogate characters have been particularly problematic here in the past,
     # so we give them a boost by combining strategies pending an upstream
     # feature (https://github.com/HypothesisWorks/hypothesis/issues/1401)
+    @unittest.skipIf(not hasattr(datetime, "fromisoformat"), reason="new in 3.7")
     @given(
         dt=st.datetimes(timezones=TIME_ZONES_STRATEGY),
         sep=st.characters() | st.characters(whitelist_categories=["Cs"]),
