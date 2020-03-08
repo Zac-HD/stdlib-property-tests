@@ -40,6 +40,10 @@ class TestUnicode(unittest.TestCase):
         index = s.find(u)
         index2 = s.index(u)
         self.assertEqual(index, index2)
+
+        # we check 0 <= index <= len(prefix)
+        # whether u or a substring of it is in prefix or not, the highest index
+        # we can find u at is len(prefix)
         self.assertLessEqual(0, index)
         self.assertLessEqual(index, len(prefix))
 
@@ -54,7 +58,12 @@ class TestUnicode(unittest.TestCase):
         index = s.rfind(u)
         index2 = s.rindex(u)
         self.assertEqual(index, index2)
-        self.assertGreaterEqual(index, len(prefix))
+
+        # we check len(prefix) <= index <= len(s)
+        # as above: whether u or a substring of it is in suffix or not, the
+        # lowest index we can find u at is len(prefix)
+        self.assertLessEqual(len(prefix), index)
+        self.assertLessEqual(index, len(s))
 
         index = s.rfind(u, len(prefix), len(s) - len(suffix))
         index2 = s.rindex(u, len(prefix), len(s) - len(suffix))
