@@ -52,7 +52,7 @@ class TestUnicode(unittest.TestCase):
     def test_rfind(self, u, prefix, suffix):
         s = prefix + u + suffix
         index = s.rfind(u)
-        index2 = s.rfind(u)
+        index2 = s.rindex(u)
         self.assertEqual(index, index2)
         self.assertGreaterEqual(index, len(prefix))
 
