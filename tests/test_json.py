@@ -34,7 +34,7 @@ class TestJson(unittest.TestCase):
     ):
         # For any self-equal JSON object, we can deserialise it to an equal object.
         # (regardless of how we vary string encoding, indentation, and sorting)
-        assert obj == obj
+        self.assertEqual(obj, obj)
         deserialised = json.loads(
             json.dumps(
                 obj,

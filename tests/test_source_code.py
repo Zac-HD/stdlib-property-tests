@@ -24,7 +24,7 @@ class TestAST(unittest.TestCase):
         first = ast.parse(source_code)
         unparsed = ast.unparse(first)
         second = ast.parse(unparsed)
-        assert ast.dump(first) == ast.dump(second)
+        self.assertEqual(ast.dump(first), ast.dump(second))
 
 
 class TestDis(unittest.TestCase):
