@@ -1,6 +1,4 @@
 # Top-level dependencies for `tox -e check`
-autoflake
-black
 flake8
 flake8-assertive
 flake8-bandit
@@ -8,6 +6,5 @@ flake8-bugbear
 flake8-builtins
 flake8-comprehensions
 flake8-print
-isort
 pep8-naming
-pyupgrade
+shed
