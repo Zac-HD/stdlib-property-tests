@@ -59,3 +59,27 @@ Bugs found via this specific project:
   `tokenize.untokenize` does not round-trip as documented.
   Nor, for that matter, do the `tokenize`/`untokenize` functions in
   `lib2to3.pgen.tokenize`.
+
+
+## Further reading
+
+- Hypothesis' [website](https://hypothesis.works/),
+  [documentation](https://hypothesis.readthedocs.io/),
+  [GitHub repo](https://github.com/HypothesisWorks/hypothesis)
+- [Introductory articles](https://hypothesis.works/articles/intro/),
+  [simple properties](https://fsharpforfunandprofit.com/posts/property-based-testing-2/),
+  [metamorphic properties](https://www.hillelwayne.com/post/metamorphic-testing/)
+- Related thoughts from
+  [hardware testing and verification](https://danluu.com/testing/),
+  [testing a screencast editor](https://wickstrom.tech/programming/2019/03/02/property-based-testing-in-a-screencast-editor-introduction.html),
+  [PBT in Erlang / Elixr](https://propertesting.com/toc.html),
+  [testing C code using Hypothesis](https://engineering.backtrace.io/posts/2020-03-11-how-hard-is-it-to-guide-test-case-generators-with-branch-coverage-feedback/)
+- [`python-afl`](https://github.com/jwilk/python-afl) or
+  [OSS-FUZZ](https://github.com/google/oss-fuzz) could work very nicely with
+  [Hypothesis' fuzz support](https://hypothesis.readthedocs.io/en/latest/details.html#use-with-external-fuzzers)
+- [`hypothesmith`](https://github.com/Zac-HD/hypothesmith)
+  generates syntatically-valid but weird Python source code
+  (e.g. [BPO-38953](https://bugs.python.org/issue38953) or
+  [psf/black#970](https://github.com/psf/black/issues/970)).
+  [Using a syntax tree](https://github.com/Zac-HD/hypothesmith/issues/2)
+  for semantic validity is the logical next step.
