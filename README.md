@@ -59,6 +59,9 @@ Bugs found via this specific project:
   `tokenize.untokenize` does not round-trip as documented.
   Nor, for that matter, do the `tokenize`/`untokenize` functions in
   `lib2to3.pgen.tokenize`.
+- [PEP-615 (zoneinfo)](https://github.com/pganssle/zoneinfo/pull/32/commits/dc389beaaeaa702361fd186d8581da20dda807bb)
+  `fold` detection failed for early transitions when the number of elapsed
+  seconds is too large to fit in a C integer.
 
 
 ## Further reading
