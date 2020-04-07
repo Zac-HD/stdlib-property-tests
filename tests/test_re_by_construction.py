@@ -133,6 +133,7 @@ class Escape(Re):
 class Charset(Re):
     def __init__(self, elements):
         # either characters, or (start, stop) tuples
+        # XXX character classes
         self.elements = elements
 
     def matching_string(self, draw, state):
@@ -164,22 +165,25 @@ class Charset(Re):
 
     @staticmethod
     def make(draw):
-        # XXX character classes
-        elements = []
-        for _ in range(draw(st.integers(min_value=2, max_value=20))):
-            if draw(st.booleans()):
-                # character
-                elements.append(draw(st.characters(blacklist_characters="-^]\\")))
-            else:
-                # character range
-                start = draw(st.characters(blacklist_characters="-^]\\"))
-                stop = draw(
-                    st.characters(
-                        blacklist_characters="-^]\\", min_codepoint=ord(start) + 1
-                    )
-                )
-                elements.append((start, stop))
+        elements = draw(st.lists(Charset.charset_elements(), min_size=2, max_size=20))
         return Charset(elements)
+
+    @staticmethod
+    @st.composite
+    def charset_elements(draw):
+        """ Generate an element of a character set element, either a single
+        character or a character range, represented by a tuple. """
+        if draw(st.booleans()):
+            # character
+            return draw(st.characters(blacklist_characters="-^]\\"))
+        else:
+            start = draw(st.characters(blacklist_characters="-^]\\"))
+            stop = draw(
+                st.characters(
+                    blacklist_characters="-^]\\", min_codepoint=ord(start) + 1
+                )
+            )
+            return start, stop
 
 
 class CharsetComplement(Re):
