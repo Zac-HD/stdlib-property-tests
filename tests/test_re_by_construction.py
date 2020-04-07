@@ -462,8 +462,10 @@ class SequenceWithBackref(Sequence):
         name = draw(
             st.text(
                 min_size=1,
-                alphabet=st.characters(min_codepoint=ord("a"), max_codepoint=ord("z")),
-            ).filter(lambda s: s not in used_names)
+                alphabet=st.characters(
+                    whitelist_categories=["L", "Nl"], whitelist_characters="_"
+                ),
+            ).filter(lambda s: s not in used_names and s.isidentifier())
         )
         used_names.add(name)
         bases[group] = g = NamedGroup(bases[group], name)
