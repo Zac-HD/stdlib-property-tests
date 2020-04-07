@@ -393,7 +393,16 @@ class SequenceWithBackref(Sequence):
         # the following code would have found the bug in
         # https://foss.heptapod.net/pypy/pypy/commit/c83c263f9f00d18d48ef536947c9b61ca53e01a2
         group = draw(st.integers(min_value=0, max_value=len(bases) - 1))
-        name = gensym()
+        # generate then caches a set across the run
+        used_names = draw(st.shared(st.builds(set), key="group names"))
+        # XXX a lot more characters are safe identifiers
+        name = draw(
+            st.text(
+                min_size=1,
+                alphabet=st.characters(min_codepoint=ord("a"), max_codepoint=ord("z")),
+            ).filter(lambda s: s not in used_names)
+        )
+        used_names.add(name)
         bases[group] = g = NamedGroup(bases[group], name)
         bases.append(GroupReference(g))
         return Sequence(bases)
