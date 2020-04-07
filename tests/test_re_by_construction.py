@@ -1,3 +1,7 @@
+""" Test the re module by constructing random syntax trees of (a subset of)
+regular expressions. A tree can be used to generate matching or optionally
+non-matching strings. A tree can also be turned into re syntax."""
+
 import re
 import sys
 import time
@@ -9,14 +13,6 @@ IS_PYPY = hasattr(sys, "pypy_version_info")
 
 special_characters = ".^$*+?{}\\[]-|()#=!"
 MAXREPEAT = 7
-
-counter = 0
-
-
-def gensym():
-    global counter
-    counter += 1
-    return f"symbol{counter}"
 
 
 class State:
@@ -50,6 +46,8 @@ class Re:
 
 
 class Char(Re):
+    """ Matches a single character self.c"""
+
     def __init__(self, c):
         self.c = c
 
@@ -69,6 +67,8 @@ class Char(Re):
 
 
 class CharClass(Re):
+    """ Matches a (unicode) character category, positively or negatively """
+
     def __init__(self, char, unicat, polarity_cat):
         self.char = char
         self.unicat = unicat
@@ -96,6 +96,8 @@ class CharClass(Re):
 
 
 class Dot(Re):
+    """ The regular expression '.', matches anything except a newline. """
+
     def matching_string(self, draw, state):
         return draw(st.characters(blacklist_characters="\n"))
 
@@ -111,6 +113,8 @@ class Dot(Re):
 
 
 class Escape(Re):
+    """ A regular expression escape. """
+
     def __init__(self, c):
         self.c = c
 
@@ -131,8 +135,10 @@ class Escape(Re):
 
 
 class Charset(Re):
+    """ A character set [...]. The elements are either single characters or
+    ranges represented by (start, stop) tuples. """
+
     def __init__(self, elements):
-        # either characters, or (start, stop) tuples
         # XXX character classes
         self.elements = elements
 
@@ -187,6 +193,8 @@ class Charset(Re):
 
 
 class CharsetComplement(Re):
+    """ An complemented character set [^...]"""
+
     def __init__(self, charset):
         assert isinstance(charset, Charset)
         self.charset = charset
@@ -208,8 +216,10 @@ class CharsetComplement(Re):
 
 
 def re_simple(draw):
+    """ Generate a "simple" regular expression, either '.', a single character,
+    an escaped character a character category, a charset or its complement. """
     cls = draw(
-        st.sampled_from([Dot, Char, Escape, Charset, CharClass, CharsetComplement])
+        st.sampled_from([Dot, Char, Escape, CharClass, Charset, CharsetComplement])
     )
     return cls.make(draw)
 
@@ -218,18 +228,32 @@ class RecursiveRe(Re):
     """ Abstract base class for "recursive" Re nodes, ie nodes that build on
     top of other nodes. """
 
-    @classmethod
-    def curry(cls, base):
-        return lambda draw: cls.make_with_base(base, draw)
-
     @staticmethod
     def make_with_base(base, draw):
+        """ Factory function to construct a random instance of the current
+        class. The nodes that this class builds upons are constructed using
+        base, which has to be a function that takes draw, and returns an
+        instance of (a subclass of) Re."""
         raise NotImplementedError
+
+    @classmethod
+    def curry(cls, base):
+        """ Bind the 'base' argument of the cls.make_with_base factory
+        function. The result takes only a 'draw' argument to construct random
+        instances of base """
+        return lambda draw: cls.make_with_base(base, draw)
 
 
 class Repetition(RecursiveRe):
+    """ Abstract base class for "repetition"-like Re nodes. Can be either
+    minimally matching (lazy) or maximally (greedy). """
+
+    # minimum number of repetitions of self.base
+    # subclasses need to define that attribute, either on the class or instance
     istart = None
-    istop = MAXREPEAT
+    # maximum number of repetitions of self.base
+    # subclasses need to define that attribute, either on the class or instance
+    istop = None
 
     def __init__(self, base, lazy):
         self.base = base
@@ -265,6 +289,9 @@ class Repetition(RecursiveRe):
 
 
 class Star(Repetition):
+    """ A Kleene-Star * regular expression, repeating the base expression 0 or
+    more times. """
+
     istart = 0
     istop = MAXREPEAT
 
@@ -277,6 +304,9 @@ class Star(Repetition):
 
 
 class Plus(Repetition):
+    """ A + regular expression repeating the base expression 1 or more
+    times."""
+
     istart = 1
     istop = MAXREPEAT
 
@@ -289,6 +319,8 @@ class Plus(Repetition):
 
 
 class FixedNum(Repetition):
+    """ Repeating the base expression a fixed number of times. """
+
     def __init__(self, base, num, lazy):
         Repetition.__init__(self, base, lazy)
         self.istart = self.istop = num
@@ -303,6 +335,8 @@ class FixedNum(Repetition):
 
 
 class StartStop(Repetition):
+    """ Repeating the base expression between istart and istop many times. """
+
     def __init__(self, base, istart, istop, lazy):
         Repetition.__init__(self, base, lazy)
         self.istart = istart
@@ -319,6 +353,8 @@ class StartStop(Repetition):
 
 
 class Stop(Repetition):
+    """ Repeating the base expression between 0 and istop many times. """
+
     istart = 0
 
     def __init__(self, base, istop, lazy):
@@ -335,6 +371,8 @@ class Stop(Repetition):
 
 
 class Start(Repetition):
+    """ Repeating the base expression at least istart many times. """
+
     istop = MAXREPEAT
 
     def __init__(self, base, istart, lazy):
@@ -351,6 +389,9 @@ class Start(Repetition):
 
 
 class Sequence(RecursiveRe):
+    """ A sequence of other regular expressions, which need to match one after
+    the other. """
+
     def __init__(self, bases):
         self.bases = bases
 
@@ -385,12 +426,14 @@ class Sequence(RecursiveRe):
 
 
 class SequenceWithBackref(Sequence):
+    """ Not really its own class, just a way to construct a sequence. Generate
+    a random sequence and then turn one of the expressions into a named group,
+    and add a reference to that group to the end of the sequence. """
+
     @staticmethod
     def make_with_base(base, draw):
-        bases = [
-            base(draw)
-            for i in range(draw(st.integers(min_value=2, max_value=MAXREPEAT)))
-        ]
+        sequence = Sequence.make_with_base(base, draw)
+        bases = sequence.bases
         if IS_PYPY and sys.pypy_version_info < (7, 3, 1):
             # PyPy before 7.3.1 actually has broken group references!
             return Sequence(bases)
@@ -409,10 +452,12 @@ class SequenceWithBackref(Sequence):
         used_names.add(name)
         bases[group] = g = NamedGroup(bases[group], name)
         bases.append(GroupReference(g))
-        return Sequence(bases)
+        return sequence
 
 
 class NamedGroup(Re):
+    """ Wrap the base expression into a named group with name. """
+
     def __init__(self, base, name):
         self.base = base
         self.name = name
@@ -435,7 +480,10 @@ class NamedGroup(Re):
 
 
 class GroupReference(Re):
+    """ Backreference to a named group. """
+
     def __init__(self, group):
+        assert isinstance(group, NamedGroup)
         self.group = group
 
     def can_be_empty(self):
@@ -452,6 +500,10 @@ class GroupReference(Re):
 
 
 class Disjunction(RecursiveRe):
+    """ A disjunction of regular expressions, ie combining them with '|', where
+    either of the base expressions has to match for the whole expression to
+    match."""
+
     def __init__(self, bases):
         self.bases = bases
 
@@ -482,6 +534,8 @@ class Disjunction(RecursiveRe):
 
 
 def re_test(maker):
+    """ Generate a test for the Re generating function maker. """
+
     @given(data=st.data())
     def test(self, data):
         draw = data.draw
