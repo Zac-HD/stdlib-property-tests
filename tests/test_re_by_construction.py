@@ -284,8 +284,24 @@ class Repetition(RecursiveRe):
     @staticmethod
     def make_with_base(base, draw):
         b = base(draw)
-        cls = draw(st.sampled_from([Star, Plus, FixedNum, StartStop, Start, Stop]))
+        cls = draw(
+            st.sampled_from(
+                [Questionmark, Star, Plus, FixedNum, Start, Stop, StartStop]
+            )
+        )
         return cls.make_repetition(b, draw)
+
+
+class Questionmark(Repetition):
+    istart = 0
+    istop = 1
+
+    def _build_re(self):
+        return self.base.build_re() + "?"
+
+    @staticmethod
+    def make_repetition(base, draw):
+        return Questionmark(base, draw(st.booleans()))
 
 
 class Star(Repetition):
