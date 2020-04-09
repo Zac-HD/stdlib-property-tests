@@ -50,6 +50,7 @@ the formatters, linters, and test suite.
 <!--- Add yourself to the end of the list! -->
 - [Zac Hatfield-Dodds](https://zhd.dev)
 - [Paul Ganssle](https://ganssle.io)
+- [Carl Friedrich Bolz-Tereick](http://cfbolz.de/)
 
 
 ## Trophy Case
