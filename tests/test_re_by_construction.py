@@ -6,6 +6,8 @@ import re
 import sys
 import time
 import unittest
+from contextlib import contextmanager
+from functools import partial
 
 from hypothesis import given, strategies as st
 
@@ -235,13 +237,6 @@ class RecursiveRe(Re):
         base, which has to be a function that takes draw, and returns an
         instance of (a subclass of) Re."""
         raise NotImplementedError
-
-    @classmethod
-    def curry(cls, base):
-        """ Bind the 'base' argument of the cls.make_with_base factory
-        function. The result takes only a 'draw' argument to construct random
-        instances of base """
-        return lambda draw: cls.make_with_base(base, draw)
 
 
 class Repetition(RecursiveRe):
@@ -551,38 +546,65 @@ class Disjunction(RecursiveRe):
 # run some tests
 
 
+@contextmanager
+def assert_quick_not_quadratic(self):
+    # Tests for timing can be brittle, but we think it's still worth checking
+    # for pathologically slow (eg accidentally quadratic) performance issues.
+    start = time.perf_counter()
+    yield
+    end = time.perf_counter()
+    # On the machine this was developed, matching was always >= 500x faster
+    self.assertLessEqual(end - start, 0.01)
+
+
+def _tag_test_for_distinct_hypothesis_database_key(maker):
+    # Feel free to ignore this, it's a touch of magic with Hypothesis internals
+    # which ensures that we have a separate database entry for each maker
+    # despite reusing the test function.  By design we don't actually *need* to
+    # do this, but there's a small performance advantage if the tests fail
+    # which could be useful if we run these on OSS-FUZZ one day.
+    def inner(testfunc):
+        key = getattr(maker, "func", maker).__qualname__.encode()
+        testfunc._hypothesis_internal_add_digest = key
+        return testfunc
+
+    return inner
+
+
 def re_test(maker):
     """ Generate a test for the Re generating function maker. """
 
     @given(data=st.data())
+    @_tag_test_for_distinct_hypothesis_database_key(maker)
     def test(self, data):
         draw = data.draw
         re_object = maker(draw)
         re_pattern = re_object.build_re()
-        syes = re_object.matching_string(draw, State())
         compiled = re.compile(re_pattern)
-        t1 = time.time()
-        self.assertIsNotNone(compiled.match(syes))
-        t2 = time.time()
-        # potentially brittle, but, try to find accidentally slow things
-        # eg quadratic algorithms
-        # on the machine this was developed, matching was at least 500x faster
-        # always
-        self.assertLessEqual(t2 - t1, 0.01)
+
+        # Sanity-check match on empty string is as we expect
+        self.assertEqual(re_object.can_be_empty(), compiled.match("") is not None)
+
+        # Check that a string expected to match does in fact match
+        syes = re_object.matching_string(draw, State())
+        with assert_quick_not_quadratic(self):
+            self.assertIsNotNone(compiled.match(syes))
+
+        # Check that, if we can generate a string that is not expected to match,
+        # that string really doesn't match.
         try:
             sno = re_object.non_matching_string(draw, State())
         except CantGenerateNonMatching:
             pass
         else:
-            t1 = time.time()
-            self.assertIsNone(compiled.match(sno))
-            t2 = time.time()
-            self.assertLessEqual(t2 - t1, 0.01)
+            with assert_quick_not_quadratic(self):
+                self.assertIsNone(compiled.match(sno))
 
     return test
 
 
 class TestRe(unittest.TestCase):
+    # Simple test cases
     test_char = re_test(Char.make)
     test_dots = re_test(Dot.make)
     test_escape = re_test(Escape.make)
@@ -590,16 +612,16 @@ class TestRe(unittest.TestCase):
     test_charset = re_test(Charset.make)
     test_simple = re_test(re_simple)
 
-    simple_repetition = Repetition.curry(re_simple)
+    # Compound pattern types
+    simple_repetition = partial(Repetition.make_with_base, re_simple)
+    sequence_repetition = partial(Sequence.make_with_base, simple_repetition)
+    backref_sequence = partial(SequenceWithBackref.make_with_base, simple_repetition)
+    simple_disjunction = partial(Disjunction.make_with_base, re_simple)
+    disjunction_sequence = partial(Disjunction.make_with_base, backref_sequence)
+
+    # Tests for compound pattern types
     test_simple_repetition = re_test(simple_repetition)
-
-    sequence_repetition = Sequence.curry(simple_repetition)
     test_sequence_repetition = re_test(sequence_repetition)
-
-    backref_sequence = SequenceWithBackref.curry(simple_repetition)
     test_backref_sequence = re_test(backref_sequence)
-
-    test_simple_disjunction = re_test(Disjunction.curry(re_simple))
-
-    disjunction_sequence_repetition = Disjunction.curry(backref_sequence)
-    test_disjunction_sequence_repetition = re_test(disjunction_sequence_repetition)
+    test_simple_disjunction = re_test(simple_disjunction)
+    test_disjunction_sequence_repetition = re_test(disjunction_sequence)
