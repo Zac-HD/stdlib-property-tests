@@ -1,5 +1,5 @@
 import unittest
-from datetime import datetime, timezone
+from datetime import date, datetime, time, timezone
 
 from hypothesis import given, strategies as st
 from hypothesis.extra.dateutil import timezones as dateutil_timezones
@@ -24,6 +24,34 @@ class TestDatetime(unittest.TestCase):
         dt_rt = datetime.fromisoformat(dtstr)
         self.assertEqual(dt, dt_rt)
 
+    @unittest.skipIf(not hasattr(datetime, "fromisocalendar"), reason="new in 3.8")
+    @given(dt=st.datetimes())
+    def test_fromisocalendar_date_datetime(self, dt):
+        isocalendar = dt.isocalendar()
+        dt_rt = datetime.fromisocalendar(*isocalendar)
+
+        # Only the date portion of the datetime survives a round trip.
+        d = dt.date()
+        d_rt = dt_rt.date()
+
+        self.assertEqual(d, d_rt)
+
+        # .fromisocalendar() should always return a datetime at midnight
+        t = time(0)
+        t_rt = dt_rt.time()
+
+        self.assertEqual(t, t_rt)
+
     # TODO: https://docs.python.org/3/library/datetime.html
-    # e.g. round-trip for datetime.isocalendar and other pairs
+    # e.g. round-trip for other serialization / deserialization pairs.
     # Use exhaustive testing rather than Hypothesis where possible!
+
+
+class TestDate(unittest.TestCase):
+    @unittest.skipIf(not hasattr(datetime, "fromisocalendar"), reason="new in 3.8")
+    @given(d=st.dates())
+    def test_fromisocalendar(self, d):
+        isocalendar = d.isocalendar()
+        d_rt = date.fromisocalendar(*isocalendar)
+
+        self.assertEqual(d, d_rt)
