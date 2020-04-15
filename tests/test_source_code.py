@@ -63,7 +63,7 @@ class TestLib2to3(unittest.TestCase):
     @example("#\n\x0cpass#\n")
     @given(source_code=hypothesmith.from_grammar().map(fixup).filter(str.strip))
     @settings.get_profile("slow")
-    def test_tokenize_round_trip(self, source_code):
+    def test_lib2to3_tokenize_round_trip(self, source_code):
         tokens = []
 
         def token_eater(*args):

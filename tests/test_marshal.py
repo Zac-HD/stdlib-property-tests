@@ -17,17 +17,10 @@ composite_immutables = st.recursive(
     lambda children: st.tuples(children) | st.frozensets(children, max_size=1),
     max_leaves=20,
 )
-
-
-def marshallable_data(children):
-    return st.lists(children, max_size=20) | st.dictionaries(
-        composite_immutables, children
-    )
-
-
 marshallable_data = st.recursive(
     composite_immutables | st.sets(composite_immutables),
-    marshallable_data,
+    lambda children: st.lists(children, max_size=20)
+    | st.dictionaries(composite_immutables, children),
     max_leaves=20,
 )
 
