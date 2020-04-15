@@ -5,8 +5,8 @@
 #    tox -e deps
 #
 attrs==19.3.0             # via hypothesis
-hypothesis[dateutil]==5.8.0  # via -r requirements.in, hypothesmith
-hypothesmith==0.0.5       # via -r requirements.in
+hypothesis[dateutil]==5.9.0  # via -r requirements.in, hypothesmith
+hypothesmith==0.0.6       # via -r requirements.in
 lark-parser==0.8.5        # via hypothesmith
 python-dateutil==2.8.1    # via hypothesis
 six==1.14.0               # via python-dateutil
