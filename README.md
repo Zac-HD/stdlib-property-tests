@@ -23,7 +23,7 @@ and be running as part of the CPython CI suite by the end of the sprints.
 ## LICENSE
 By contributing to this repository, you agree to license the contributed
 code under user's choice of the Mozilla Public License Version 2.0, and
-the Python Software Foundation License Version 2.
+the Apache License 2.0.
 
 This dual-licence is intended to make it as easy as possible for the tests
 in this repository to be used upstream by the CPython project, other
