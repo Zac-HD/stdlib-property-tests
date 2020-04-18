@@ -62,7 +62,9 @@ Bugs found via this specific project:
   `lib2to3.pgen.tokenize`.
 - [PEP-615 (zoneinfo)](https://github.com/pganssle/zoneinfo/pull/32/commits/dc389beaaeaa702361fd186d8581da20dda807bb)
   `fold` detection failed for early transitions when the number of elapsed
-  seconds is too large to fit in a C integer.
+  seconds is too large to fit in a C integer; and
+  [a `fold` inconsistency](https://github.com/pganssle/zoneinfo/pull/41)
+  where first offset handling was broken in the C extension.
 
 
 ## Further reading
