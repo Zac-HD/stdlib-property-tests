@@ -9,7 +9,8 @@ import unittest
 from contextlib import contextmanager
 from functools import partial
 
-from hypothesis import given, strategies as st
+from hypothesis import given, reject, strategies as st
+from hypothesis.errors import InvalidArgument
 
 IS_PYPY = hasattr(sys, "pypy_version_info")
 
@@ -154,13 +155,23 @@ class Charset(Re):
         if not any(isinstance(x, tuple) for x in self.elements):
             # easy case, only chars
             return draw(st.characters(blacklist_characters=self.elements))
+
+        # Now, we *could* iterate through to get the set of all allowed characters,
+        # but that would be pretty slow.  Instead, we just get the highest and lowest
+        # allowed codepoints and stay outside that interval, blacklisting individual
+        # characters.  If we allow both chr(0) and chr(maxunicode), just give up.
         chars = "".join(x for x in self.elements if not isinstance(x, tuple))
-        range_stops = [ord(x[1]) for x in self.elements if isinstance(x, tuple)]
-        max_stop = max(range_stops)
-        res = draw(
-            st.characters(min_codepoint=max_stop + 1, blacklist_characters=chars)
-        )
-        return res
+        low = min(ord(x[0]) for x in self.elements if isinstance(x, tuple))
+        high = max(ord(x[1]) for x in self.elements if isinstance(x, tuple))
+        strat = st.nothing()
+        if low > 0:
+            strat |= st.characters(max_codepoint=low - 1, blacklist_characters=chars)
+        if high < sys.maxunicode:
+            strat |= st.characters(min_codepoint=high + 1, blacklist_characters=chars)
+        try:
+            return draw(strat)
+        except InvalidArgument:
+            reject()
 
     def build_re(self):
         res = []
