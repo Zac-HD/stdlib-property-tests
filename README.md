@@ -13,11 +13,21 @@ They're no magic bullet, but computer-assisted testing techniques routinely
 try inputs that humans wouldn't think of (or bother trying), and
 [turn up bugs that humans missed](https://twitter.com/pganssle/status/1193371087968591872).
 
-Writing tests that describe *every valid input* often leads to tighter
-validation and cleaner designs too, even when no counterexamples are found!
+Specifically, we propose adding these tests to CPython's CI suite,
+and gave [a talk at the 2020 Language Summit](https://us.pycon.org/2020/events/languagesummit/)
+to that effect.  Doing so would mean:
 
-We aim to have a compelling proof-of-concept by [PyCon US](https://us.pycon.org/2020/),
-and be running as part of the CPython CI suite by the end of the sprints.
+- New code can be developed with property-based tests - some already is, but
+  [adding it to CPython CI would catch bugs](https://twitter.com/pganssle/status/1193371087968591872).
+- Tests for existing code can be _augumented_ with property-based tests where
+  this seems particularly valuable - e.g. `tests/test_source_code.py` in this repo
+  has discovered several bugs.
+- Property-based testing can be adopted incrementally.  _Replacing_ existing
+  tests is an explicit non-goal of this project.
+
+[PyPy already uses Hypothesis](https://github.com/Zac-HD/stdlib-property-tests/issues/7),
+and sharing as much of the test suite as possible between implementations would be great.
+How this would work depends largely on CPython's decisions, though.
 
 
 ## LICENSE
