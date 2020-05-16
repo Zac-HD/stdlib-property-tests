@@ -29,7 +29,7 @@ class TestColorsys(unittest.TestCase):
         hsv = colorsys.rgb_to_hsv(r, g, b)
         rgb = colorsys.hsv_to_rgb(hsv[0], hsv[1], hsv[2])
 
-        self.assertSequenceEqual((r, g, b), rgb)
+        self.assertTupleEqual((r, g, b), rgb)
 
 
 class TestPlistlib(unittest.TestCase):
