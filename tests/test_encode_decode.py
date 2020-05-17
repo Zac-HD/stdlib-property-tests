@@ -33,12 +33,18 @@ class TestColorsys(unittest.TestCase):
     # conversion.  We're using the `@unittest.expectedFailure` decorator
     # to silence this for now, but will report it on bugs.python.org too.
     # Highest observed target scores:
-    #     0.247024  (label='absolute difference in Q values')
-    #     0.247234  (label='absolute difference in Y values')
-    #     0.341794  (label='absolute difference in I values')
+    #     0.0653745  (label='absolute difference in I values')
+    #     0.107538   (label='absolute difference in Y values')
+    #     0.197426   (label='absolute difference in Q values')
     @unittest.expectedFailure
+    # Allowed ranges for I and Q values are not documented in CPython
+    # https://docs.python.org/3/library/colorsys.html - and code comments
+    # note "I and Q ... covers a slightly larger range [than `[0, 1`]".
+    # We therefore follow https://en.wikipedia.org/wiki/YIQ#Preconditions
     @given(
-        y=st.floats(0.0, 1.0), i=st.floats(-0.523, 0.523), q=st.floats(-0.596, 0.596),
+        y=st.floats(0.0, 1.0),
+        i=st.floats(-0.5957, 0.5957),
+        q=st.floats(-0.5226, 0.5226),
     )
     def test_yiq_rgb_round_trip(self, y, i, q):
         r, g, b = colorsys.yiq_to_rgb(y, i, q)
