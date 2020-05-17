@@ -5,10 +5,11 @@ import unittest
 from hypothesis import given, strategies as st
 
 
-# function which adds padding, till len(payload) is a multiple of 4
+# function which adds padding, to make len(payload) a multiple of 4
 def add_padding(payload):
-    padding = b"\0" * ((-len(payload)) % 4)
-    payload = payload + padding
+    if len(payload) % 4 != 0:
+        padding = b"\0" * ((-len(payload)) % 4)
+        payload = payload + padding
     return payload
 
 
