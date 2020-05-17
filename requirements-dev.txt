@@ -14,7 +14,7 @@ colorama==0.4.3           # via bandit
 flake8-assertive==1.2.1   # via -r requirements-dev.in
 flake8-bandit==2.1.2      # via -r requirements-dev.in
 flake8-bugbear==20.1.4    # via -r requirements-dev.in
-flake8-builtins==1.5.2    # via -r requirements-dev.in
+flake8-builtins==1.5.3    # via -r requirements-dev.in
 flake8-comprehensions==3.2.2  # via -r requirements-dev.in
 flake8-polyfill==1.0.2    # via flake8-bandit, pep8-naming
 flake8-print==3.1.4       # via -r requirements-dev.in
@@ -29,14 +29,14 @@ pbr==5.4.5                # via stevedore
 pep8-naming==0.10.0       # via -r requirements-dev.in
 pycodestyle==2.6.0        # via flake8, flake8-bandit, flake8-print
 pyflakes==2.2.0           # via autoflake, flake8
-pyupgrade==2.4.1          # via shed
+pyupgrade==2.4.3          # via shed
 pyyaml==5.3.1             # via bandit
-regex==2020.5.7           # via black
+regex==2020.5.14          # via black
 shed==0.0.4               # via -r requirements-dev.in
 six==1.14.0               # via bandit, flake8-print, stevedore
 smmap==3.0.4              # via gitdb
 stevedore==1.32.0         # via bandit
 tokenize-rt==4.0.0        # via pyupgrade
-toml==0.10.0              # via black
+toml==0.10.1              # via black
 typed-ast==1.4.1          # via black
 zipp==3.1.0               # via importlib-metadata
