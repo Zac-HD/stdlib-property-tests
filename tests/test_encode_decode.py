@@ -31,10 +31,19 @@ class TestBase64(unittest.TestCase):
         x = base64.b16encode(payload)
         self.assertEqual(payload, base64.b16decode(x))
 
-    @given(payload=st.binary(), adobe=st.booleans())
-    def test_a85_encode_decode_round_trip(self, payload, adobe):
-        x = base64.a85encode(payload, foldspaces=True, adobe=adobe)
-        self.assertEqual(payload, base64.a85decode(x, foldspaces=False, adobe=adobe))
+    @given(
+        payload=st.binary(),
+        foldspaces=st.booleans(),
+        wrapcol=st.integers(0, 10),
+        adobe=st.booleans(),
+    )
+    def test_a85_encode_decode_round_trip(self, payload, foldspaces, wrapcol, adobe):
+        x = base64.a85encode(
+            payload, foldspaces=foldspaces, wrapcol=wrapcol, adobe=adobe
+        )
+        self.assertEqual(
+            payload, base64.a85decode(x, foldspaces=foldspaces, adobe=adobe)
+        )
 
     @given(payload=st.binary())
     def test_b85_encode_decode_round_trip(self, payload):
