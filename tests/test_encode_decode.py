@@ -16,7 +16,43 @@ class TestBinASCII(unittest.TestCase):
 
 
 class TestColorsys(unittest.TestCase):
-    # TODO: https://docs.python.org/3/library/colorsys.html
+    # Module documentation https://docs.python.org/3/library/colorsys.html
+    @given(
+        r=st.floats(0.0, 1.0), g=st.floats(0.0, 1.0), b=st.floats(0.0, 1.0),
+    )
+    def test_rgb_yiq_round_trip(self, r, g, b):
+        y, i, q = colorsys.rgb_to_yiq(r, g, b)
+        r2, g2, b2 = colorsys.yiq_to_rgb(y, i, q)
+
+        self.assertAlmostEqual(r, r2)
+        self.assertAlmostEqual(g, g2)
+        self.assertAlmostEqual(b, b2)
+
+    # TODO: Test fails y=0.0, i=0.0, q=1.3331280799455672e-07
+    # AssertionError: 0.0 != 5.0000000042300254e-08 within 7 places
+
+    @given(
+        y=st.floats(0.0, 1.0), i=st.floats(-0.523, 0.523), q=st.floats(-0.596, 0.596),
+    )
+    def test_yiq_rgb_round_trip(self, y, i, q):
+        r, g, b = colorsys.yiq_to_rgb(y, i, q)
+        y2, i2, q2 = colorsys.rgb_to_yiq(r, g, b)
+
+        self.assertAlmostEqual(y, y2)
+        self.assertAlmostEqual(i, i2)
+        self.assertAlmostEqual(q, q2)
+
+    @given(
+        r=st.floats(0.0, 1.0), g=st.floats(0.0, 1.0), b=st.floats(0.0, 1.0),
+    )
+    def test_rgb_hls_round_trip(self, r, g, b):
+        h, l, s = colorsys.rgb_to_hls(r, g, b)
+        r2, g2, b2 = colorsys.hls_to_rgb(h, l, s)
+
+        self.assertAlmostEqual(r, r2)
+        self.assertAlmostEqual(g, g2)
+        self.assertAlmostEqual(b, b2)
+
     @given(
         r=st.floats(0.0, 1.0), g=st.floats(0.0, 1.0), b=st.floats(0.0, 1.0),
     )
