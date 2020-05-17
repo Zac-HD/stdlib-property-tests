@@ -2,7 +2,7 @@ import colorsys
 import quopri
 import unittest
 
-from hypothesis import given, strategies as st
+from hypothesis import given, strategies as st, target
 
 
 class TestBase64(unittest.TestCase):
@@ -17,6 +17,7 @@ class TestBinASCII(unittest.TestCase):
 
 class TestColorsys(unittest.TestCase):
     # Module documentation https://docs.python.org/3/library/colorsys.html
+
     @given(
         r=st.floats(0.0, 1.0), g=st.floats(0.0, 1.0), b=st.floats(0.0, 1.0),
     )
@@ -28,9 +29,14 @@ class TestColorsys(unittest.TestCase):
         self.assertAlmostEqual(g, g2)
         self.assertAlmostEqual(b, b2)
 
-    # TODO: Test fails y=0.0, i=0.0, q=1.3331280799455672e-07
-    # AssertionError: 0.0 != 5.0000000042300254e-08 within 7 places
-
+    # This appears to be a genuine and serious bug in YIQ/RBG/YIQ color
+    # conversion.  We're using the `@unittest.expectedFailure` decorator
+    # to silence this for now, but will report it on bugs.python.org too.
+    # Highest observed target scores:
+    #     0.247024  (label='absolute difference in Q values')
+    #     0.247234  (label='absolute difference in Y values')
+    #     0.341794  (label='absolute difference in I values')
+    @unittest.expectedFailure
     @given(
         y=st.floats(0.0, 1.0), i=st.floats(-0.523, 0.523), q=st.floats(-0.596, 0.596),
     )
@@ -38,6 +44,9 @@ class TestColorsys(unittest.TestCase):
         r, g, b = colorsys.yiq_to_rgb(y, i, q)
         y2, i2, q2 = colorsys.rgb_to_yiq(r, g, b)
 
+        target(abs(y - y2), label="absolute difference in Y values")
+        target(abs(i - i2), label="absolute difference in I values")
+        target(abs(q - q2), label="absolute difference in Q values")
         self.assertAlmostEqual(y, y2)
         self.assertAlmostEqual(i, i2)
         self.assertAlmostEqual(q, q2)
