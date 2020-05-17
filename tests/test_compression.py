@@ -51,7 +51,7 @@ class TestLZMA(unittest.TestCase):
     # TODO: https://docs.python.org/3/library/lzma.html
     @given(payload=st.binary(), compresslevel=st.integers(0, 9))
     def test_lzma_round_trip(self, payload, compresslevel):
-        result = lzma.decompress(lzma.compress(payload,  preset=compresslevel))
+        result = lzma.decompress(lzma.compress(payload, preset=compresslevel))
         self.assertEqual(payload, result)
 
 
