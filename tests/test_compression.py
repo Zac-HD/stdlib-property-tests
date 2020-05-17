@@ -1,5 +1,6 @@
 import bz2
 import gzip
+import lzma
 import unittest
 
 from hypothesis import HealthCheck, given, settings, strategies as st
@@ -48,7 +49,10 @@ class TestGzip(unittest.TestCase):
 
 class TestLZMA(unittest.TestCase):
     # TODO: https://docs.python.org/3/library/lzma.html
-    pass
+    @given(payload=st.binary(), compresslevel=st.integers(0, 9))
+    def test_lzma_round_trip(self, payload, compresslevel):
+        result = lzma.decompress(lzma.compress(payload,  preset=compresslevel))
+        self.assertEqual(payload, result)
 
 
 class TestZlib(unittest.TestCase):
