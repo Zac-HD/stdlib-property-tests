@@ -1,6 +1,6 @@
+import colorsys
 import quopri
 import unittest
-import colorsys
 
 from hypothesis import given, strategies as st
 
@@ -18,18 +18,15 @@ class TestBinASCII(unittest.TestCase):
 class TestColorsys(unittest.TestCase):
     # TODO: https://docs.python.org/3/library/colorsys.html
     @given(
-        r=st.floats(0.0, 1.0),
-        g=st.floats(0.0, 1.0),
-        b=st.floats(0.0, 1.0),
-        h=st.floats(0.0, 1.0),
-        s=st.floats(0.0, 1.0),
-        v=st.floats(0.0, 1.0),
+        r=st.floats(0.0, 1.0), g=st.floats(0.0, 1.0), b=st.floats(0.0, 1.0),
     )
-    def test_rgb_hsv_round_trip(self, r, g, b, h, s, v):
-        hsv = colorsys.rgb_to_hsv(r, g, b)
-        rgb = colorsys.hsv_to_rgb(hsv[0], hsv[1], hsv[2])
+    def test_rgb_hsv_round_trip(self, r, g, b):
+        h, s, v = colorsys.rgb_to_hsv(r, g, b)
+        r2, g2, b2 = colorsys.hsv_to_rgb(h, s, v)
 
-        self.assertTupleEqual((r, g, b), rgb)
+        self.assertAlmostEqual(r, r2)
+        self.assertAlmostEqual(g, g2)
+        self.assertAlmostEqual(b, b2)
 
 
 class TestPlistlib(unittest.TestCase):
