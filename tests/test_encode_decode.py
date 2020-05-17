@@ -1,3 +1,4 @@
+import base64
 import quopri
 import unittest
 
@@ -5,8 +6,48 @@ from hypothesis import given, strategies as st
 
 
 class TestBase64(unittest.TestCase):
-    # TODO: https://docs.python.org/3/library/base64.html
-    pass
+    @given(payload=st.binary())
+    def test_b64_encode_decode_round_trip(self, payload):
+        x = base64.b64encode(payload)
+        self.assertEqual(payload, base64.b64decode(x))
+
+    @given(payload=st.binary())
+    def test_standard_b64_encode_decode_round_trip(self, payload):
+        x = base64.standard_b64encode(payload)
+        self.assertEqual(payload, base64.standard_b64decode(x))
+
+    @given(payload=st.binary())
+    def test_urlsafe_b64_encode_decode_round_trip(self, payload):
+        x = base64.urlsafe_b64encode(payload)
+        self.assertEqual(payload, base64.urlsafe_b64decode(x))
+
+    @given(payload=st.binary())
+    def test_b32_encode_decode_round_trip(self, payload):
+        x = base64.b32encode(payload)
+        self.assertEqual(payload, base64.b32decode(x))
+
+    @given(payload=st.binary())
+    def test_b16_encode_decode_round_trip(self, payload):
+        x = base64.b16encode(payload)
+        self.assertEqual(payload, base64.b16decode(x))
+
+    @given(payload=st.binary(), adobe=st.booleans())
+    def test_a85_encode_decode_round_trip(self, payload, adobe):
+        x = base64.a85encode(payload, foldspaces=True, adobe=adobe)
+        self.assertEqual(payload, base64.a85decode(x, foldspaces=False, adobe=adobe))
+
+    @given(payload=st.binary())
+    def test_b85_encode_decode_round_trip(self, payload):
+        x = base64.b85encode(payload)
+        self.assertEqual(payload, base64.b85decode(x))
+
+    # this is failing for payload = b'\x00'
+    # expected to remove padding implicitly
+    @unittest.expectedFailure
+    @given(payload=st.binary())
+    def test_b85_encode_with_padding_decode_round_trip(self, payload):
+        x = base64.b85encode(payload, True)
+        self.assertEqual(payload, base64.b85decode(x))
 
 
 class TestBinASCII(unittest.TestCase):
