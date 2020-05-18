@@ -77,9 +77,9 @@ class TestLZMA(unittest.TestCase):
     @given(
         payload=st.binary(),
         data=st.data())
-    def test_lzma_round_trip_format_alone(self, payload, data):
+    def test_lzma_round_trip_format_raw(self, payload, data):
         # create the list of filter ids
-        filter_ids=data.draw(st.lists([lzma.FILTER_DELTA, lzma.FILTER_X86, lzma.FILTER_IA64, lzma.FILTER_ARM, lzma.FILTER_ARMTHUMB, lzma.FILTER_POWERPC, lzma.FILTER_SPARC], max_size=3))
+        filter_ids=data.draw(st.lists(st.sampled_from([lzma.FILTER_DELTA, lzma.FILTER_X86, lzma.FILTER_IA64, lzma.FILTER_ARM, lzma.FILTER_ARMTHUMB, lzma.FILTER_POWERPC, lzma.FILTER_SPARC]), max_size=3))
         filter_ids.append(lzma.FILTER_LZMA2)
         # create filters options
         filters=[]
@@ -96,7 +96,7 @@ class TestLZMA(unittest.TestCase):
                             "depth":data.draw(st.integers(min_value=0))
                             })
         result = lzma.decompress(
-            lzma.compress(payload, format=lzma.FORMAT_ALONE, filters=filters)
+            lzma.compress(payload, format=lzma.FORMAT_RAW, filters=filters)
         )
         self.assertEqual(payload, result)
 
