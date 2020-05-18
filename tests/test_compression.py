@@ -68,7 +68,7 @@ class TestLZMA(unittest.TestCase):
         payload=st.binary(),
         compresslevel=st.integers(0, 9),
     )
-    def test_lzma_round_trip_format_alone(self, payload, format, compresslevel):
+    def test_lzma_round_trip_format_alone(self, payload, compresslevel):
         result = lzma.decompress(
             lzma.compress(payload, format=lzma.FORMAT_ALONE, preset=compresslevel)
         )
