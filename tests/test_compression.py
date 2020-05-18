@@ -49,9 +49,30 @@ class TestGzip(unittest.TestCase):
 
 class TestLZMA(unittest.TestCase):
     # TODO: https://docs.python.org/3/library/lzma.html
-    @given(payload=st.binary(), compresslevel=st.integers(0, 9))
-    def test_lzma_round_trip(self, payload, compresslevel):
-        result = lzma.decompress(lzma.compress(payload, preset=compresslevel))
+    @given(
+        payload=st.binary(),
+        check=st.sampled_from(
+            ["CHECK_NONE", "CHECK_CRC32", "CHECK_CRC64", "CHECK_SHA256"]
+        ),
+        compresslevel=st.integers(0, 9),
+    )
+    def test_lzma_round_trip_format_xz(self, payload, check, compresslevel):
+        result = lzma.decompress(
+            lzma.compress(
+                payload, format="FORMAT_XZ", check=check, preset=compresslevel
+            )
+        )
+        self.assertEqual(payload, result)
+
+    @given(
+        payload=st.binary(),
+        format=st.sampled_from(["FORMAT_ALONE", "FORMAT_RAW"]),
+        compresslevel=st.integers(0, 9),
+    )
+    def test_lzma_round_trip_format_others(self, payload, format, compresslevel):
+        result = lzma.decompress(
+            lzma.compress(payload, format=format, preset=compresslevel)
+        )
         self.assertEqual(payload, result)
 
 
