@@ -51,22 +51,23 @@ class TestLZMA(unittest.TestCase):
     # TODO: https://docs.python.org/3/library/lzma.html
     @given(
         payload=st.binary(),
+        format=st.just(lzma.FORMAT_XZ),
         check=st.sampled_from(
-            ["CHECK_NONE", "CHECK_CRC32", "CHECK_CRC64", "CHECK_SHA256"]
+            [lzma.CHECK_NONE, lzma.CHECK_CRC32, lzma.CHECK_CRC64, lzma.CHECK_SHA256]
         ),
         compresslevel=st.integers(0, 9),
     )
-    def test_lzma_round_trip_format_xz(self, payload, check, compresslevel):
+    def test_lzma_round_trip_format_xz(self, payload, format, check, compresslevel):
         result = lzma.decompress(
             lzma.compress(
-                payload, format="FORMAT_XZ", check=check, preset=compresslevel
+                payload, format=format, check=check, preset=compresslevel
             )
         )
         self.assertEqual(payload, result)
 
     @given(
         payload=st.binary(),
-        format=st.sampled_from(["FORMAT_ALONE", "FORMAT_RAW"]),
+        format=st.sampled_from([lzma.FORMAT_ALONE, lzma.FORMAT_RAW]),
         compresslevel=st.integers(0, 9),
     )
     def test_lzma_round_trip_format_others(self, payload, format, compresslevel):
