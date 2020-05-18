@@ -65,8 +65,7 @@ class TestLZMA(unittest.TestCase):
         self.assertEqual(payload, result)
 
     @given(
-        payload=st.binary(),
-        compresslevel=st.integers(0, 9),
+        payload=st.binary(), compresslevel=st.integers(0, 9),
     )
     def test_lzma_round_trip_format_alone(self, payload, compresslevel):
         result = lzma.decompress(
@@ -74,31 +73,60 @@ class TestLZMA(unittest.TestCase):
         )
         self.assertEqual(payload, result)
 
-    @given(
-        payload=st.binary(),
-        data=st.data())
+    @given(payload=st.binary(), data=st.data())
     def test_lzma_round_trip_format_raw(self, payload, data):
         # create the list of filter ids
-        filter_ids=data.draw(st.lists(st.sampled_from([lzma.FILTER_DELTA, lzma.FILTER_X86, lzma.FILTER_IA64, lzma.FILTER_ARM, lzma.FILTER_ARMTHUMB, lzma.FILTER_POWERPC, lzma.FILTER_SPARC]), max_size=3))
+        filter_ids = data.draw(
+            st.lists(
+                st.sampled_from(
+                    [
+                        lzma.FILTER_DELTA,
+                        lzma.FILTER_X86,
+                        lzma.FILTER_IA64,
+                        lzma.FILTER_ARM,
+                        lzma.FILTER_ARMTHUMB,
+                        lzma.FILTER_POWERPC,
+                        lzma.FILTER_SPARC,
+                    ]
+                ),
+                max_size=3,
+            )
+        )
         filter_ids.append(lzma.FILTER_LZMA2)
         # create filters options
-        filters=[]
+        filters = []
         for filter in filter_ids:
             lc = data.draw(st.integers(0, 4))
-            lp = data.draw(st.integers(0, 4-lc))
-            filters.append({"id":filter,
-                            "preset":data.draw(st.integers(0, 9)),
-                            "dict_size":data.draw(st.integers(4000, 1.875e+8)),
-                            "lc":lc,
-                            "lp":lp,
-                            "mode":data.draw(st.sampled_from([lzma.MODE_FAST, lzma.MODE_NORMAL])),
-                            "mf":data.draw(st.sampled_from([lzma.MF_HC3, lzma.MF_HC4, lzma.MF_BT2, lzma.MF_BT3, lzma.MF_BT4])),
-                            "depth":data.draw(st.integers(min_value=0))
-                            })
+            lp = data.draw(st.integers(0, 4 - lc))
+            filters.append(
+                {
+                    "id": filter,
+                    "preset": data.draw(st.integers(0, 9)),
+                    "dict_size": data.draw(st.integers(4000, 1.875e8)),
+                    "lc": lc,
+                    "lp": lp,
+                    "mode": data.draw(
+                        st.sampled_from([lzma.MODE_FAST, lzma.MODE_NORMAL])
+                    ),
+                    "mf": data.draw(
+                        st.sampled_from(
+                            [
+                                lzma.MF_HC3,
+                                lzma.MF_HC4,
+                                lzma.MF_BT2,
+                                lzma.MF_BT3,
+                                lzma.MF_BT4,
+                            ]
+                        )
+                    ),
+                    "depth": data.draw(st.integers(min_value=0)),
+                }
+            )
         result = lzma.decompress(
             lzma.compress(payload, format=lzma.FORMAT_RAW, filters=filters)
         )
         self.assertEqual(payload, result)
+
 
 class TestZlib(unittest.TestCase):
     # TODO: https://docs.python.org/3/library/zlib.html
