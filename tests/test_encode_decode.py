@@ -1,7 +1,9 @@
 import base64
+import binascii
 import colorsys
 import quopri
 import string
+import sys
 import unittest
 
 from hypothesis import example, given, strategies as st, target
@@ -95,8 +97,88 @@ class TestBase64(unittest.TestCase):
 
 
 class TestBinASCII(unittest.TestCase):
-    # TODO: https://docs.python.org/3/library/binascii.html
-    pass
+    @given(payload=st.binary(), backtick=st.booleans())
+    def test_b2a_uu_a2b_uu_round_trip(self, payload, backtick):
+        if sys.version_info[:2] >= (3, 7):
+            x = binascii.b2a_uu(payload, backtick=backtick)
+        else:
+            x = binascii.b2a_uu(payload)
+        self.assertEqual(payload, binascii.a2b_uu(x))
+
+    @given(payload=st.binary(), newline=st.booleans())
+    def test_b2a_base64_a2b_base64_round_trip(self, payload, newline):
+        x = binascii.b2a_base64(payload, newline=newline)
+        self.assertEqual(payload, binascii.a2b_base64(x))
+
+    @given(
+        payload=st.binary(),
+        quotetabs=st.booleans(),
+        istext=st.booleans(),
+        header=st.booleans(),
+    )
+    def test_b2a_qp_a2b_qp_round_trip(self, payload, quotetabs, istext, header):
+        x = binascii.b2a_qp(payload, quotetabs=quotetabs, istext=istext, header=header)
+        self.assertEqual(payload, binascii.a2b_qp(x, header=header))
+
+    @given(payload=st.binary())
+    def test_rlecode_hqx_rledecode_hqx_round_trip(self, payload):
+        x = binascii.rlecode_hqx(payload)
+        self.assertEqual(payload, binascii.rledecode_hqx(x))
+
+    @given(payload=st.binary())
+    def test_b2a_hqx_a2b_hqx_round_trip(self, payload):
+        # assuming len(payload) as 3, since it throws exception: binascii.Incomplete, when length is not a multiple of 3
+        if len(payload) % 3:
+            with self.assertRaises(binascii.Incomplete):
+                x = binascii.b2a_hqx(payload)
+                binascii.a2b_hqx(x)
+            payload += b"\x00" * (-len(payload) % 3)
+        x = binascii.b2a_hqx(payload)
+        res, _ = binascii.a2b_hqx(x)
+        self.assertEqual(payload, res)
+
+    @given(payload=st.binary(), value=st.just(0) | st.integers())
+    @example(payload=b"", value=2 ** 63)
+    def test_crc_hqx(self, payload, value):
+        crc = binascii.crc_hqx(payload, value)
+        self.assertIs(type(crc), int)
+
+    @given(
+        payload_piece_1=st.binary(),
+        payload_piece_2=st.binary(),
+        value=st.just(0) | st.integers(),
+    )
+    def test_crc_hqx_two_pieces(self, payload_piece_1, payload_piece_2, value):
+        combined_crc = binascii.crc_hqx(payload_piece_1 + payload_piece_2, value)
+        crc_part1 = binascii.crc_hqx(payload_piece_1, value)
+        crc = binascii.crc_hqx(payload_piece_2, crc_part1)
+        self.assertEqual(combined_crc, crc)
+
+    @given(payload=st.binary(), value=st.just(0) | st.integers())
+    def test_crc32(self, payload, value):
+        crc = binascii.crc32(payload, value)
+        self.assertIs(type(crc), int)
+
+    @given(
+        payload_piece_1=st.binary(),
+        payload_piece_2=st.binary(),
+        value=st.just(0) | st.integers(),
+    )
+    def test_crc32_two_part(self, payload_piece_1, payload_piece_2, value):
+        combined_crc = binascii.crc32(payload_piece_1 + payload_piece_2, value)
+        crc_part1 = binascii.crc32(payload_piece_1, value)
+        crc = binascii.crc32(payload_piece_2, crc_part1)
+        self.assertEqual(combined_crc, crc)
+
+    @given(payload=st.binary())
+    def test_b2a_hex_a2b_hex_round_trip(self, payload):
+        x = binascii.b2a_hex(payload)
+        self.assertEqual(payload, binascii.a2b_hex(x))
+
+    @given(payload=st.binary())
+    def test_hexlify_unhexlify_round_trip(self, payload):
+        x = binascii.hexlify(payload)
+        self.assertEqual(payload, binascii.unhexlify(x))
 
 
 class TestColorsys(unittest.TestCase):
