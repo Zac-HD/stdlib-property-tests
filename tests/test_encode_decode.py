@@ -1,12 +1,15 @@
 import base64
 import binascii
 import colorsys
+import platform
 import quopri
 import string
 import sys
 import unittest
 
 from hypothesis import example, given, strategies as st, target
+
+IS_PYPY = platform.python_implementation() == "PyPy"
 
 
 def add_padding(payload):
@@ -137,12 +140,14 @@ class TestBinASCII(unittest.TestCase):
         res, _ = binascii.a2b_hqx(x)
         self.assertEqual(payload, res)
 
+    @unittest.skipIf(IS_PYPY, "we found an overflow bug")
     @given(payload=st.binary(), value=st.just(0) | st.integers())
     @example(payload=b"", value=2 ** 63)
     def test_crc_hqx(self, payload, value):
         crc = binascii.crc_hqx(payload, value)
-        self.assertIs(type(crc), int)
+        self.assertIsInstance(crc, int)
 
+    @unittest.skipIf(IS_PYPY, "we found an overflow bug")
     @given(
         payload_piece_1=st.binary(),
         payload_piece_2=st.binary(),
@@ -157,7 +162,7 @@ class TestBinASCII(unittest.TestCase):
     @given(payload=st.binary(), value=st.just(0) | st.integers())
     def test_crc32(self, payload, value):
         crc = binascii.crc32(payload, value)
-        self.assertIs(type(crc), int)
+        self.assertIsInstance(crc, int)
 
     @given(
         payload_piece_1=st.binary(),

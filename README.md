@@ -69,6 +69,7 @@ Bugs found via this specific project:
 
 - [BPO-40661, a segfault in the new parser](https://bugs.python.org/issue40661),
   was given maximum priority and blocked the planned release of CPython 3.9 beta1.
+- [`OverflowError` in `binascii.crc_hqx()`](https://github.com/Zac-HD/stdlib-property-tests/pull/18#issuecomment-631426084) under PyPy
 - [BPO-38953](https://bugs.python.org/issue38953) `tokenize.tokenize` ->
   `tokenize.untokenize` does not round-trip as documented.
   Nor, for that matter, do the `tokenize`/`untokenize` functions in
