@@ -97,17 +97,12 @@ class TestBase64(unittest.TestCase):
 
 
 class TestBinASCII(unittest.TestCase):
-    @given(payload=st.binary())
-    def test_b2a_uu_a2b_uu_round_trip(self, payload):
-        x = binascii.b2a_uu(payload)
-        self.assertEqual(payload, binascii.a2b_uu(x))
-
-    @unittest.skipIf(
-        sys.version_info[:2] < (3, 7), "backtick not supported in this library version"
-    )
     @given(payload=st.binary(), backtick=st.booleans())
-    def test_b2a_uu_a2b_uu_round_trip_with_backtick(self, payload, backtick):
-        x = binascii.b2a_uu(payload, backtick=backtick)
+    def test_b2a_uu_a2b_uu_round_trip(self, payload, backtick):
+        if sys.version_info[:2] >= (3, 7):
+            x = binascii.b2a_uu(payload, backtick=backtick)
+        else:
+            x = binascii.b2a_uu(payload)
         self.assertEqual(payload, binascii.a2b_uu(x))
 
     @given(payload=st.binary(), newline=st.booleans())
