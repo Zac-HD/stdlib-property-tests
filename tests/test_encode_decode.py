@@ -141,8 +141,8 @@ class TestBinASCII(unittest.TestCase):
     )
     def test_crc_hqx_two_pieces(self, payload_piece_1, payload_piece_2, value):
         combined_crc = binascii.crc_hqx(payload_piece_1 + payload_piece_2, value)
-        crc = binascii.crc_hqx(payload_piece_1, value)
-        crc = binascii.crc_hqx(payload_piece_2, crc)
+        crc_part1 = binascii.crc_hqx(payload_piece_1, value)
+        crc = binascii.crc_hqx(payload_piece_2, crc_part1)
         self.assertEqual(combined_crc, crc)
 
     @given(payload=st.binary(), value=st.just(0) | st.integers())
@@ -157,8 +157,8 @@ class TestBinASCII(unittest.TestCase):
     )
     def test_crc32_two_part(self, payload_piece_1, payload_piece_2, value):
         combined_crc = binascii.crc32(payload_piece_1 + payload_piece_2, value)
-        crc = binascii.crc32(payload_piece_1, value)
-        crc = binascii.crc32(payload_piece_2, crc)
+        crc_part1 = binascii.crc32(payload_piece_1, value)
+        crc = binascii.crc32(payload_piece_2, crc_part1)
         self.assertEqual(combined_crc, crc)
 
     @given(payload=st.binary())
