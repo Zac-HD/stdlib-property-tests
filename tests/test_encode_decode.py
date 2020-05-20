@@ -1,23 +1,38 @@
 import base64
 import colorsys
 import quopri
+import string
 import unittest
 
 from hypothesis import given, strategies as st, target
 
 
-# function which adds padding, to make len(payload) a multiple of 4
 def add_padding(payload):
+    """Add the expected padding for test_b85_encode_decode_round_trip."""
     if len(payload) % 4 != 0:
         padding = b"\0" * ((-len(payload)) % 4)
         payload = payload + padding
     return payload
 
 
+@st.composite
+def altchars(draw):
+    """Generate 'altchars' for base64 encoding.
+
+    Via https://docs.python.org/3/library/base64.html#base64.b64encode :
+    "Optional altchars must be a bytes-like object of at least length 2
+    (additional characters are ignored) which specifies an alternative
+    alphabet for the + and / characters."
+    """
+    reserved_chars = (string.digits + string.ascii_letters + "=").encode("ascii")
+    allowed_chars = st.sampled_from([n for n in range(256) if n not in reserved_chars])
+    return bytes(draw(st.lists(allowed_chars, min_size=2, max_size=2, unique=True)))
+
+
 class TestBase64(unittest.TestCase):
     @given(
         payload=st.binary(),
-        altchars=(st.none() | st.just(b"_-")),
+        altchars=st.none() | st.just(b"_-") | altchars(),
         validate=st.booleans(),
     )
     def test_b64_encode_decode_round_trip(self, payload, altchars, validate):
