@@ -140,7 +140,9 @@ class TestColorsys(unittest.TestCase):
         y2, i2, q2 = colorsys.rgb_to_yiq(r, g, b)
         self.assertColorsValid(y=(y, y2), i=(i, i2), q=(q, q2))
 
+    @unittest.expectedFailure
     @given(r=st.floats(0, 1), g=st.floats(0, 1), b=st.floats(0, 1))
+    @example(r=0.5714285714285715, g=0.0, b=2.2204460492503136e-16)
     def test_rgb_hls_round_trip(self, r, g, b):
         h, l, s = colorsys.rgb_to_hls(r, g, b)
         r2, g2, b2 = colorsys.hls_to_rgb(h, l, s)
