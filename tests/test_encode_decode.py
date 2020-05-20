@@ -14,11 +14,6 @@ def add_padding(payload):
 
 
 class TestBase64(unittest.TestCase):
-    # @given(
-    #     payload=st.binary(),
-    #     altchars=(st.none() | st.binary(min_size=2, max_size=2)),
-    #     validate=st.booleans(),
-    # )
     @given(
         payload=st.binary(),
         altchars=(st.none() | st.just(b"_-")),
