@@ -4,7 +4,7 @@ import quopri
 import string
 import unittest
 
-from hypothesis import given, strategies as st, target
+from hypothesis import example, given, strategies as st, target
 
 
 def add_padding(payload):
@@ -165,9 +165,12 @@ class TestPlistlib(unittest.TestCase):
     pass
 
 
-class TestQuodpri(unittest.TestCase):
+class TestQuopri(unittest.TestCase):
+    @unittest.expectedFailure
     @given(payload=st.binary(), quotetabs=st.booleans(), header=st.booleans())
-    def test_quodpri_encode_decode_round_trip(self, payload, quotetabs, header):
+    @example(payload=b"\n\r\n", quotetabs=False, header=False)
+    @example(payload=b"\r\n\n", quotetabs=False, header=False)
+    def test_quopri_encode_decode_round_trip(self, payload, quotetabs, header):
         encoded = quopri.encodestring(payload, quotetabs=quotetabs, header=header)
         decoded = quopri.decodestring(encoded, header=header)
         self.assertEqual(payload, decoded)
