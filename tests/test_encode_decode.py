@@ -131,8 +131,37 @@ class TestBinASCII(unittest.TestCase):
         res = binascii.rledecode_hqx(b)
         self.assertEqual(payload, res)
 
-    # todo test crc_hqx
-    # todo test crc32
+    @given(payload=st.binary(), value=st.just(0) | st.integers())
+    def test_crc_hqx(self, payload, value):
+        crc = binascii.crc_hqx(payload, value)
+        self.assertIs(type(crc), int)
+
+    @given(
+        payload_piece_1=st.binary(),
+        payload_piece_2=st.binary(),
+        value=st.just(0) | st.integers(),
+    )
+    def test_crc_hqx_two_pieces(self, payload_piece_1, payload_piece_2, value):
+        combined_crc = binascii.crc_hqx(payload_piece_1 + payload_piece_2, value)
+        crc = binascii.crc_hqx(payload_piece_1, value)
+        crc = binascii.crc_hqx(payload_piece_2, crc)
+        self.assertEqual(combined_crc, crc)
+
+    @given(payload=st.binary(), value=st.just(0) | st.integers())
+    def test_crc32(self, payload, value):
+        crc = binascii.crc32(payload, value)
+        self.assertIs(type(crc), int)
+
+    @given(
+        payload_piece_1=st.binary(),
+        payload_piece_2=st.binary(),
+        value=st.just(0) | st.integers(),
+    )
+    def test_crc32_two_part(self, payload_piece_1, payload_piece_2, value):
+        combined_crc = binascii.crc32(payload_piece_1 + payload_piece_2, value)
+        crc = binascii.crc32(payload_piece_1, value)
+        crc = binascii.crc32(payload_piece_2, crc)
+        self.assertEqual(combined_crc, crc)
 
     @given(payload=st.binary())
     def test_b2a_hex_a2b_hex_round_trip(self, payload):
