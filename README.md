@@ -78,6 +78,8 @@ Bugs found via this specific project:
   seconds is too large to fit in a C integer; and
   [a `fold` inconsistency](https://github.com/pganssle/zoneinfo/pull/41)
   where first offset handling was broken in the C extension.
+- Catastrophic loss of precision when attempting to round-trip YIQ-RGB-YIQ
+  with the `colorsys` module - more than 10% of the possible range.  (via #13)
 
 
 ## Further reading
