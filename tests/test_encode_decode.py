@@ -1,10 +1,11 @@
 import base64
+import binascii
 import colorsys
 import quopri
 import string
 import unittest
 
-from hypothesis import example, given, strategies as st, target
+from hypothesis import assume, example, given, strategies as st, target
 
 
 def add_padding(payload):
@@ -95,8 +96,53 @@ class TestBase64(unittest.TestCase):
 
 
 class TestBinASCII(unittest.TestCase):
-    # TODO: https://docs.python.org/3/library/binascii.html
-    pass
+    @given(payload=st.binary(), backtick=st.booleans())
+    def test_b2a_uu_a2b_uu_round_trip(self, payload, backtick):
+        x = binascii.b2a_uu(payload, backtick=backtick)
+        self.assertEqual(payload, binascii.a2b_uu(x))
+
+    @given(payload=st.binary(), newline=st.booleans())
+    def test_b2a_base64_a2b_base64_round_trip(self, payload, newline):
+        x = binascii.b2a_base64(payload, newline=newline)
+        self.assertEqual(payload, binascii.a2b_base64(x))
+
+    @given(
+        payload=st.binary(),
+        quotetabs=st.booleans(),
+        istext=st.booleans(),
+        header=st.booleans(),
+    )
+    def test_b2a_qp_a2b_qp_round_trip(self, payload, quotetabs, istext, header):
+        x = binascii.b2a_qp(payload, quotetabs=quotetabs, istext=istext, header=header)
+        self.assertEqual(payload, binascii.a2b_qp(x, header=header))
+
+    @given(payload=st.binary())
+    def test_rlecode_hqx_rledecode_hqx_round_trip(self, payload):
+        x = binascii.rlecode_hqx(payload)
+        self.assertEqual(payload, binascii.rledecode_hqx(x))
+
+    # todo fix this
+    @given(payload=st.binary())
+    def test_b2a_hqx_a2b_hqx_round_trip(self, payload):
+        rle = binascii.rlecode_hqx(payload)
+        x = binascii.b2a_hqx(rle)
+        assume(len(x) % 4 == 0)
+        b, _ = binascii.a2b_hqx(x)
+        res = binascii.rledecode_hqx(b)
+        self.assertEqual(payload, res)
+
+    # todo test crc_hqx
+    # todo test crc32
+
+    @given(payload=st.binary())
+    def test_b2a_hex_a2b_hex_round_trip(self, payload):
+        x = binascii.b2a_hex(payload)
+        self.assertEqual(payload, binascii.a2b_hex(x))
+
+    @given(payload=st.binary())
+    def test_hexlify_unhexlify_round_trip(self, payload):
+        x = binascii.hexlify(payload)
+        self.assertEqual(payload, binascii.unhexlify(x))
 
 
 class TestColorsys(unittest.TestCase):
