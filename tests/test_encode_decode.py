@@ -138,6 +138,7 @@ class TestBinASCII(unittest.TestCase):
         self.assertEqual(payload, res)
 
     @given(payload=st.binary(), value=st.just(0) | st.integers())
+    @example(payload=b"", value=2 ** 63)
     def test_crc_hqx(self, payload, value):
         crc = binascii.crc_hqx(payload, value)
         self.assertIs(type(crc), int)
