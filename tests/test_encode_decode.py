@@ -121,14 +121,12 @@ class TestBinASCII(unittest.TestCase):
         x = binascii.rlecode_hqx(payload)
         self.assertEqual(payload, binascii.rledecode_hqx(x))
 
-    # todo fix this
     @given(payload=st.binary())
     def test_b2a_hqx_a2b_hqx_round_trip(self, payload):
-        rle = binascii.rlecode_hqx(payload)
-        x = binascii.b2a_hqx(rle)
-        assume(len(x) % 4 == 0)
-        b, _ = binascii.a2b_hqx(x)
-        res = binascii.rledecode_hqx(b)
+        # assuming len(payload) as 3, since it throws exception: binascii.Incomplete, when length is not a multiple of 3
+        assume(len(payload) % 3 == 0)
+        x = binascii.b2a_hqx(payload)
+        res, _ = binascii.a2b_hqx(x)
         self.assertEqual(payload, res)
 
     @given(payload=st.binary(), value=st.just(0) | st.integers())
