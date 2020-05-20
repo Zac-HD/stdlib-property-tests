@@ -3,9 +3,10 @@ import binascii
 import colorsys
 import quopri
 import string
+import sys
 import unittest
 
-from hypothesis import assume, example, given, strategies as st, target
+from hypothesis import example, given, strategies as st, target
 
 
 def add_padding(payload):
@@ -96,8 +97,16 @@ class TestBase64(unittest.TestCase):
 
 
 class TestBinASCII(unittest.TestCase):
+    @given(payload=st.binary())
+    def test_b2a_uu_a2b_uu_round_trip(self, payload):
+        x = binascii.b2a_uu(payload)
+        self.assertEqual(payload, binascii.a2b_uu(x))
+
+    @unittest.skipIf(
+        sys.version_info[:2] < (3, 7), "backtick not supported in this library version"
+    )
     @given(payload=st.binary(), backtick=st.booleans())
-    def test_b2a_uu_a2b_uu_round_trip(self, payload, backtick):
+    def test_b2a_uu_a2b_uu_round_trip_with_backtick(self, payload, backtick):
         x = binascii.b2a_uu(payload, backtick=backtick)
         self.assertEqual(payload, binascii.a2b_uu(x))
 
@@ -124,7 +133,11 @@ class TestBinASCII(unittest.TestCase):
     @given(payload=st.binary())
     def test_b2a_hqx_a2b_hqx_round_trip(self, payload):
         # assuming len(payload) as 3, since it throws exception: binascii.Incomplete, when length is not a multiple of 3
-        assume(len(payload) % 3 == 0)
+        if len(payload) % 3:
+            with self.assertRaises(binascii.Incomplete):
+                x = binascii.b2a_hqx(payload)
+                binascii.a2b_hqx(x)
+            payload += b"\x00" * (-len(payload) % 3)
         x = binascii.b2a_hqx(payload)
         res, _ = binascii.a2b_hqx(x)
         self.assertEqual(payload, res)
