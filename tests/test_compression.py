@@ -7,6 +7,7 @@ from hypothesis import HealthCheck, given, settings, strategies as st
 
 no_health_checks = settings(suppress_health_check=HealthCheck.all())
 
+
 @st.composite
 def lzma_filters(draw):
     """Generating filters options"""
@@ -36,12 +37,10 @@ def lzma_filters(draw):
             {
                 "id": filter,
                 "preset": draw(st.integers(0, 9)),
-                #"dict_size": draw(st.integers(4000, 1.875e8)),
+                # "dict_size": draw(st.integers(4000, 1.875e8)),
                 "lc": lc,
                 "lp": lp,
-                "mode": draw(
-                    st.sampled_from([lzma.MODE_FAST, lzma.MODE_NORMAL])
-                ),
+                "mode": draw(st.sampled_from([lzma.MODE_FAST, lzma.MODE_NORMAL])),
                 "mf": draw(
                     st.sampled_from(
                         [
@@ -57,6 +56,7 @@ def lzma_filters(draw):
             }
         )
     return filters
+
 
 class TestBz2(unittest.TestCase):
     @given(payload=st.binary(), compresslevel=st.integers(1, 9))
