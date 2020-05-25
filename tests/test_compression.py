@@ -11,47 +11,31 @@ no_health_checks = settings(suppress_health_check=HealthCheck.all())
 @st.composite
 def lzma_filters(draw):
     """Generating filters options"""
-    filter_ids = draw(
-        st.lists(
-            st.sampled_from(
-                [
-                    lzma.FILTER_DELTA,
-                    lzma.FILTER_X86,
-                    lzma.FILTER_IA64,
-                    lzma.FILTER_ARM,
-                    lzma.FILTER_ARMTHUMB,
-                    lzma.FILTER_POWERPC,
-                    lzma.FILTER_SPARC,
-                ]
-            ),
-            max_size=3,
-        )
-    )
+    op_filters = [
+        lzma.FILTER_DELTA,
+        lzma.FILTER_X86,
+        lzma.FILTER_IA64,
+        lzma.FILTER_ARM,
+        lzma.FILTER_ARMTHUMB,
+        lzma.FILTER_POWERPC,
+        lzma.FILTER_SPARC,
+    ]
+    filter_ids = draw(st.lists(st.sampled_from(op_filters), max_size=3))
     filter_ids.append(lzma.FILTER_LZMA2)
     # create filters options
     filters = []
-    for filter in filter_ids:
+    for filter_ in filter_ids:
         lc = draw(st.integers(0, 4))
         lp = draw(st.integers(0, 4 - lc))
+        mf = [lzma.MF_HC3, lzma.MF_HC4, lzma.MF_BT2, lzma.MF_BT3, lzma.MF_BT4]
         filters.append(
             {
-                "id": filter,
+                "id": filter_,
                 "preset": draw(st.integers(0, 9)),
-                # "dict_size": draw(st.integers(4000, 1.875e8)),
                 "lc": lc,
                 "lp": lp,
                 "mode": draw(st.sampled_from([lzma.MODE_FAST, lzma.MODE_NORMAL])),
-                "mf": draw(
-                    st.sampled_from(
-                        [
-                            lzma.MF_HC3,
-                            lzma.MF_HC4,
-                            lzma.MF_BT2,
-                            lzma.MF_BT3,
-                            lzma.MF_BT4,
-                        ]
-                    )
-                ),
+                "mf": draw(st.sampled_from(mf)),
                 "depth": draw(st.integers(min_value=0)),
             }
         )
@@ -123,10 +107,15 @@ class TestLZMA(unittest.TestCase):
         )
         self.assertEqual(payload, result)
 
+    @unittest.skip(reason="LZMA filter strategy too general?")
     @given(payload=st.binary(), filters=lzma_filters())
     def test_lzma_round_trip_format_raw(self, payload, filters):
-        # TODO: testing with various filter options
-        pass
+        # This test is a stub from our attempt to write a round-trip test with
+        # custom LZMA filters (from the strategy above).  Ultimately we decided
+        # to defer implementation to a future PR and merge what we had working.
+        # TODO: work out what's happening here and fix it.
+        compressed = lzma.compress(payload, format=lzma.FORMAT_RAW, filters=filters)
+        self.assertEqual(payload, lzma.decompress(compressed))
 
 
 class TestZlib(unittest.TestCase):
