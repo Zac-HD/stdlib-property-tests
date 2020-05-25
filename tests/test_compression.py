@@ -1,10 +1,45 @@
 import bz2
 import gzip
+import lzma
 import unittest
 
 from hypothesis import HealthCheck, given, settings, strategies as st
 
 no_health_checks = settings(suppress_health_check=HealthCheck.all())
+
+
+@st.composite
+def lzma_filters(draw):
+    """Generating filters options"""
+    op_filters = [
+        lzma.FILTER_DELTA,
+        lzma.FILTER_X86,
+        lzma.FILTER_IA64,
+        lzma.FILTER_ARM,
+        lzma.FILTER_ARMTHUMB,
+        lzma.FILTER_POWERPC,
+        lzma.FILTER_SPARC,
+    ]
+    filter_ids = draw(st.lists(st.sampled_from(op_filters), max_size=3))
+    filter_ids.append(lzma.FILTER_LZMA2)
+    # create filters options
+    filters = []
+    for filter_ in filter_ids:
+        lc = draw(st.integers(0, 4))
+        lp = draw(st.integers(0, 4 - lc))
+        mf = [lzma.MF_HC3, lzma.MF_HC4, lzma.MF_BT2, lzma.MF_BT3, lzma.MF_BT4]
+        filters.append(
+            {
+                "id": filter_,
+                "preset": draw(st.integers(0, 9)),
+                "lc": lc,
+                "lp": lp,
+                "mode": draw(st.sampled_from([lzma.MODE_FAST, lzma.MODE_NORMAL])),
+                "mf": draw(st.sampled_from(mf)),
+                "depth": draw(st.integers(min_value=0)),
+            }
+        )
+    return filters
 
 
 class TestBz2(unittest.TestCase):
@@ -48,7 +83,39 @@ class TestGzip(unittest.TestCase):
 
 class TestLZMA(unittest.TestCase):
     # TODO: https://docs.python.org/3/library/lzma.html
-    pass
+    @given(
+        payload=st.binary(),
+        check=st.sampled_from(
+            [lzma.CHECK_NONE, lzma.CHECK_CRC32, lzma.CHECK_CRC64, lzma.CHECK_SHA256]
+        ),
+        compresslevel=st.integers(0, 9),
+    )
+    def test_lzma_round_trip_format_xz(self, payload, check, compresslevel):
+        result = lzma.decompress(
+            lzma.compress(
+                payload, format=lzma.FORMAT_XZ, check=check, preset=compresslevel
+            )
+        )
+        self.assertEqual(payload, result)
+
+    @given(
+        payload=st.binary(), compresslevel=st.integers(0, 9),
+    )
+    def test_lzma_round_trip_format_alone(self, payload, compresslevel):
+        result = lzma.decompress(
+            lzma.compress(payload, format=lzma.FORMAT_ALONE, preset=compresslevel)
+        )
+        self.assertEqual(payload, result)
+
+    @unittest.skip(reason="LZMA filter strategy too general?")
+    @given(payload=st.binary(), filters=lzma_filters())
+    def test_lzma_round_trip_format_raw(self, payload, filters):
+        # This test is a stub from our attempt to write a round-trip test with
+        # custom LZMA filters (from the strategy above).  Ultimately we decided
+        # to defer implementation to a future PR and merge what we had working.
+        # TODO: work out what's happening here and fix it.
+        compressed = lzma.compress(payload, format=lzma.FORMAT_RAW, filters=filters)
+        self.assertEqual(payload, lzma.decompress(compressed))
 
 
 class TestZlib(unittest.TestCase):
