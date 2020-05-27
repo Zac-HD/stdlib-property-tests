@@ -1,6 +1,8 @@
 import base64
 import binascii
+import binhex
 import colorsys
+import os
 import platform
 import quopri
 import string
@@ -263,3 +265,23 @@ class TestQuopri(unittest.TestCase):
         encoded = quopri.encodestring(payload, quotetabs=quotetabs, header=header)
         decoded = quopri.decodestring(encoded, header=header)
         self.assertEqual(payload, decoded)
+
+
+class TestBinhex(unittest.TestCase):
+    @given(payload=st.binary())
+    def test_binhex_encode_decode(self, payload):
+        input_file_name = "input.txt"
+        encoded_file_name = "output.hqx"
+        decoded_file_name = "result.txt"
+        with open(input_file_name, "wb", buffering=0) as input_file:
+            input_file.write(payload)
+            input_file.close()
+        binhex.binhex(input_file_name, encoded_file_name)
+        binhex.hexbin(encoded_file_name, decoded_file_name)
+        with open(decoded_file_name, "rb", buffering=0) as decoded_file:
+            decoded_payload = decoded_file.read()
+            decoded_file.close()
+        assert payload == decoded_payload
+        os.remove(input_file_name)
+        os.remove(encoded_file_name)
+        os.remove(decoded_file_name)
