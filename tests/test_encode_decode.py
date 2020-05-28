@@ -275,13 +275,10 @@ class TestBinhex(unittest.TestCase):
             input_file_name = os.path.join(dirname, "input.txt")
             encoded_file_name = os.path.join(dirname, "encoded.hqx")
             decoded_file_name = os.path.join(dirname, "decoded.txt")
-            with open(input_file_name, "wb", buffering=0) as input_file:
+            with open(input_file_name, "wb") as input_file:
                 input_file.write(payload)
             binhex.binhex(input_file_name, encoded_file_name)
             binhex.hexbin(encoded_file_name, decoded_file_name)
-            with open(decoded_file_name, "rb", buffering=0) as decoded_file:
+            with open(decoded_file_name, "rb") as decoded_file:
                 decoded_payload = decoded_file.read()
             assert payload == decoded_payload
-            os.remove(input_file_name)
-            os.remove(encoded_file_name)
-            os.remove(decoded_file_name)
