@@ -271,10 +271,10 @@ class TestQuopri(unittest.TestCase):
 class TestBinhex(unittest.TestCase):
     @given(payload=st.binary())
     def test_binhex_encode_decode(self, payload):
-        with TemporaryDirectory():
-            input_file_name = "input.txt"
-            encoded_file_name = "encoded.hqx"
-            decoded_file_name = "decoded.txt"
+        with TemporaryDirectory() as dirname:
+            input_file_name = os.path.join(dirname, "input.txt")
+            encoded_file_name = os.path.join(dirname, "encoded.hqx")
+            decoded_file_name = os.path.join(dirname, "decoded.txt")
             with open(input_file_name, "wb", buffering=0) as input_file:
                 input_file.write(payload)
             binhex.binhex(input_file_name, encoded_file_name)
