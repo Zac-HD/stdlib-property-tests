@@ -1,11 +1,14 @@
 import base64
 import binascii
+import binhex
 import colorsys
+import os
 import platform
 import quopri
 import string
 import sys
 import unittest
+from tempfile import TemporaryDirectory
 
 from hypothesis import example, given, strategies as st, target
 
@@ -263,3 +266,19 @@ class TestQuopri(unittest.TestCase):
         encoded = quopri.encodestring(payload, quotetabs=quotetabs, header=header)
         decoded = quopri.decodestring(encoded, header=header)
         self.assertEqual(payload, decoded)
+
+
+class TestBinhex(unittest.TestCase):
+    @given(payload=st.binary())
+    def test_binhex_encode_decode(self, payload):
+        with TemporaryDirectory() as dirname:
+            input_file_name = os.path.join(dirname, "input.txt")
+            encoded_file_name = os.path.join(dirname, "encoded.hqx")
+            decoded_file_name = os.path.join(dirname, "decoded.txt")
+            with open(input_file_name, "wb") as input_file:
+                input_file.write(payload)
+            binhex.binhex(input_file_name, encoded_file_name)
+            binhex.hexbin(encoded_file_name, decoded_file_name)
+            with open(decoded_file_name, "rb") as decoded_file:
+                decoded_payload = decoded_file.read()
+            assert payload == decoded_payload
