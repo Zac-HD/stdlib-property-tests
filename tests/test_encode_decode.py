@@ -8,6 +8,7 @@ import quopri
 import string
 import sys
 import unittest
+from tempfile import TemporaryDirectory
 
 from hypothesis import example, given, strategies as st, target
 
@@ -270,18 +271,17 @@ class TestQuopri(unittest.TestCase):
 class TestBinhex(unittest.TestCase):
     @given(payload=st.binary())
     def test_binhex_encode_decode(self, payload):
-        input_file_name = "input.txt"
-        encoded_file_name = "output.hqx"
-        decoded_file_name = "result.txt"
-        with open(input_file_name, "wb", buffering=0) as input_file:
-            input_file.write(payload)
-            input_file.close()
-        binhex.binhex(input_file_name, encoded_file_name)
-        binhex.hexbin(encoded_file_name, decoded_file_name)
-        with open(decoded_file_name, "rb", buffering=0) as decoded_file:
-            decoded_payload = decoded_file.read()
-            decoded_file.close()
-        assert payload == decoded_payload
-        os.remove(input_file_name)
-        os.remove(encoded_file_name)
-        os.remove(decoded_file_name)
+        with TemporaryDirectory():
+            input_file_name = "input.txt"
+            encoded_file_name = "encoded.hqx"
+            decoded_file_name = "decoded.txt"
+            with open(input_file_name, "wb", buffering=0) as input_file:
+                input_file.write(payload)
+            binhex.binhex(input_file_name, encoded_file_name)
+            binhex.hexbin(encoded_file_name, decoded_file_name)
+            with open(decoded_file_name, "rb", buffering=0) as decoded_file:
+                decoded_payload = decoded_file.read()
+            assert payload == decoded_payload
+            os.remove(input_file_name)
+            os.remove(encoded_file_name)
+            os.remove(decoded_file_name)
