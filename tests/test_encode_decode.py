@@ -277,12 +277,9 @@ class TestPlistlib(unittest.TestCase):
         pass_format_arg=st.booleans(),
     )
     def test_dumps_loads(self, payload, fmt, pass_format_arg):
-        if pass_format_arg:
-            plist_dump = plistlib.dumps(payload, fmt=fmt)
-            self.assertEqual(payload, plistlib.loads(plist_dump, fmt=fmt))
-        else:
-            plist_dump = plistlib.dumps(payload)
-            self.assertEqual(payload, plistlib.loads(plist_dump))
+        plist_dump = plistlib.dumps(payload, fmt=fmt)
+        plist_load = plistlib.loads(plist_dump, fmt=fmt if pass_format_arg else None)
+        self.assertEqual(payload, plist_load)
 
 
 class TestQuopri(unittest.TestCase):
