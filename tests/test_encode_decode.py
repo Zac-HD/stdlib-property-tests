@@ -2,12 +2,14 @@ import base64
 import binascii
 import binhex
 import colorsys
+import io
 import os
 import platform
 import quopri
 import string
 import sys
 import unittest
+import uu
 from tempfile import TemporaryDirectory
 
 from hypothesis import example, given, strategies as st, target
@@ -282,3 +284,20 @@ class TestBinhex(unittest.TestCase):
             with open(decoded_file_name, "rb") as decoded_file:
                 decoded_payload = decoded_file.read()
             assert payload == decoded_payload
+
+
+class TestUu(unittest.TestCase):
+    @given(
+        payload=st.binary(),
+        name=st.none() | st.just("-") | st.just("0o666"),
+        quiet=st.binary(),
+    )
+    def test_uu_encode_decode(self, payload, name, quiet):
+        input_file = io.BytesIO(payload)
+        encoded_file = io.BytesIO()
+        decoded_file = io.BytesIO()
+        uu.encode(input_file, encoded_file, name=name)
+        encoded_file.seek(0)
+        uu.decode(encoded_file, out_file=decoded_file, quiet=quiet)
+        decoded_payload = decoded_file.getvalue()
+        assert payload == decoded_payload
