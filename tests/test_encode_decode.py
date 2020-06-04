@@ -259,6 +259,8 @@ text_strategy = st.text(alphabet=st.characters(blacklist_categories=["Cc", "Cs"]
 
 plistlib_data = st.recursive(
     st.booleans()
+    | st.binary()
+    | st.datetimes().map(lambda d: d.replace(microsecond=0))
     | st.integers(min_value=-1 << 63, max_value=1 << 64 - 1)
     | st.floats(allow_nan=False)
     | text_strategy,
