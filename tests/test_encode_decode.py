@@ -15,7 +15,6 @@ from tempfile import TemporaryDirectory
 
 from hypothesis import HealthCheck, example, given, settings, strategies as st, target
 
-no_health_checks = settings(suppress_health_check=HealthCheck.all())
 IS_PYPY = platform.python_implementation() == "PyPy"
 
 
@@ -258,7 +257,7 @@ class TestColorsys(unittest.TestCase):
 
 text_strategy = st.text(alphabet=st.characters(blacklist_categories=["Cc", "Cs"]))
 
-json_strategy = st.recursive(
+plistlib_data = st.recursive(
     st.booleans()
     | st.integers(min_value=-1 << 63, max_value=1 << 64 - 1)
     | st.floats(allow_nan=False)
@@ -269,11 +268,19 @@ json_strategy = st.recursive(
 
 
 class TestPlistlib(unittest.TestCase):
-    @no_health_checks
-    @given(payload=json_strategy)
-    def test_dumps_loads(self, payload):
-        plist_dump = plistlib.dumps(payload)
-        self.assertEqual(payload, plistlib.loads(plist_dump))
+    @settings(suppress_health_check=HealthCheck.all())
+    @given(
+        payload=plistlib_data,
+        fmt=st.just(plistlib.FMT_XML) | st.just(plistlib.FMT_BINARY),
+        pass_format_arg=st.booleans(),
+    )
+    def test_dumps_loads(self, payload, fmt, pass_format_arg):
+        if pass_format_arg:
+            plist_dump = plistlib.dumps(payload, fmt=fmt)
+            self.assertEqual(payload, plistlib.loads(plist_dump, fmt=fmt))
+        else:
+            plist_dump = plistlib.dumps(payload)
+            self.assertEqual(payload, plistlib.loads(plist_dump))
 
 
 class TestQuopri(unittest.TestCase):
