@@ -5,6 +5,7 @@ import colorsys
 import io
 import os
 import platform
+import plistlib
 import quopri
 import string
 import sys
@@ -12,8 +13,9 @@ import unittest
 import uu
 from tempfile import TemporaryDirectory
 
-from hypothesis import example, given, strategies as st, target
+from hypothesis import HealthCheck, example, given, settings, strategies as st, target
 
+no_health_checks = settings(suppress_health_check=HealthCheck.all())
 IS_PYPY = platform.python_implementation() == "PyPy"
 
 
@@ -254,9 +256,24 @@ class TestColorsys(unittest.TestCase):
         self.assertColorsValid(h=(h, h2), s=(s, s2), v=(v, v2))
 
 
+text_strategy = st.text(alphabet=st.characters(blacklist_categories=["Cc", "Cs"]))
+
+json_strategy = st.recursive(
+    st.booleans()
+    | st.integers(min_value=-1 << 63, max_value=1 << 64 - 1)
+    | st.floats(allow_nan=False)
+    | text_strategy,
+    lambda sub_strategy: st.lists(sub_strategy)
+    | st.dictionaries(text_strategy, sub_strategy),
+)
+
+
 class TestPlistlib(unittest.TestCase):
-    # TODO: https://docs.python.org/3/library/plistlib.html
-    pass
+    @no_health_checks
+    @given(payload=json_strategy)
+    def test_dumps_loads(self, payload):
+        plist_dump = plistlib.dumps(payload)
+        self.assertEqual(payload, plistlib.loads(plist_dump))
 
 
 class TestQuopri(unittest.TestCase):
