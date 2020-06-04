@@ -273,7 +273,7 @@ class TestPlistlib(unittest.TestCase):
     @settings(suppress_health_check=HealthCheck.all())
     @given(
         payload=plistlib_data,
-        fmt=st.just(plistlib.FMT_XML) | st.just(plistlib.FMT_BINARY),
+        fmt=st.sampled_from([plistlib.FMT_XML, plistlib.FMT_BINARY]),
         pass_format_arg=st.booleans(),
     )
     def test_dumps_loads(self, payload, fmt, pass_format_arg):
