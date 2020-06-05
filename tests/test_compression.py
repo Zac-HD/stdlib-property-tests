@@ -120,7 +120,7 @@ class TestLZMA(unittest.TestCase):
 
 
 class TestZlib(unittest.TestCase):
-    @given(payload=st.binary(), value=st.just(0) | st.integers())
+    @given(payload=st.binary(), value=st.just(1) | st.integers())
     def test_adler32(self, payload, value):
         checksum = zlib.adler32(payload, value)
         self.assertIsInstance(checksum, int)
@@ -128,7 +128,7 @@ class TestZlib(unittest.TestCase):
     @given(
         payload_piece_1=st.binary(),
         payload_piece_2=st.binary(),
-        value=st.just(0) | st.integers(),
+        value=st.just(1) | st.integers(),
     )
     def test_adler32_two_part(self, payload_piece_1, payload_piece_2, value):
         combined_checksum = zlib.adler32(payload_piece_1 + payload_piece_2, value)
