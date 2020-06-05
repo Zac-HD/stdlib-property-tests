@@ -2,6 +2,7 @@ import bz2
 import gzip
 import lzma
 import unittest
+import zlib
 
 from hypothesis import HealthCheck, given, settings, strategies as st
 
@@ -120,4 +121,42 @@ class TestLZMA(unittest.TestCase):
 
 class TestZlib(unittest.TestCase):
     # TODO: https://docs.python.org/3/library/zlib.html
-    pass
+
+    @given(payload=st.binary(), value=st.just(0) | st.integers())
+    def test_adler32(self, payload, value):
+        checksum = zlib.adler32(payload, value)
+        self.assertIsInstance(checksum, int)
+
+    @given(
+        payload_piece_1=st.binary(),
+        payload_piece_2=st.binary(),
+        value=st.just(0) | st.integers(),
+    )
+    def test_adler32_two_part(self, payload_piece_1, payload_piece_2, value):
+        combined_checksum = zlib.adler32(payload_piece_1 + payload_piece_2, value)
+        checksum_part1 = zlib.adler32(payload_piece_1, value)
+        checksum = zlib.adler32(payload_piece_2, checksum_part1)
+        self.assertEqual(combined_checksum, checksum)
+
+    @given(payload=st.binary(), value=st.just(0) | st.integers())
+    def test_crc32(self, payload, value):
+        crc = zlib.crc32(payload, value)
+        self.assertIsInstance(crc, int)
+
+    @given(
+        payload_piece_1=st.binary(),
+        payload_piece_2=st.binary(),
+        value=st.just(0) | st.integers(),
+    )
+    def test_crc32_two_part(self, payload_piece_1, payload_piece_2, value):
+        combined_crc = zlib.crc32(payload_piece_1 + payload_piece_2, value)
+        crc_part1 = zlib.crc32(payload_piece_1, value)
+        crc = zlib.crc32(payload_piece_2, crc_part1)
+        self.assertEqual(combined_crc, crc)
+
+    @given(
+        payload=st.binary(), level=st.just(-1) | st.integers(0, 9),
+    )
+    def test_compress_decompress_round_trip(self, payload, level):
+        x = zlib.compress(payload, level=level)
+        self.assertEqual(payload, zlib.decompress(x))
