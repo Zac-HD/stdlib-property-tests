@@ -153,8 +153,10 @@ class TestZlib(unittest.TestCase):
         self.assertEqual(combined_crc, crc)
 
     @given(
-        payload=st.binary(), level=st.just(-1) | st.integers(0, 9),
+        payload=st.binary(),
+        level=st.just(-1) | st.integers(0, 9),
+        bufsize=st.just(zlib.DEF_BUF_SIZE) | st.integers(0, zlib.DEF_BUF_SIZE),
     )
-    def test_compress_decompress_round_trip(self, payload, level):
+    def test_compress_decompress_round_trip(self, payload, level, bufsize):
         x = zlib.compress(payload, level=level)
-        self.assertEqual(payload, zlib.decompress(x))
+        self.assertEqual(payload, zlib.decompress(x, bufsize=bufsize))
