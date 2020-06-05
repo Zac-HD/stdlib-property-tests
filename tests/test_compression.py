@@ -120,8 +120,6 @@ class TestLZMA(unittest.TestCase):
 
 
 class TestZlib(unittest.TestCase):
-    # TODO: https://docs.python.org/3/library/zlib.html
-
     @given(payload=st.binary(), value=st.just(0) | st.integers())
     def test_adler32(self, payload, value):
         checksum = zlib.adler32(payload, value)
