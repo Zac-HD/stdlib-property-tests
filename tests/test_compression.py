@@ -120,38 +120,34 @@ class TestLZMA(unittest.TestCase):
 
 
 class TestZlib(unittest.TestCase):
-    @given(payload=st.binary(), value=st.just(1) | st.integers())
-    def test_adler32(self, payload, value):
-        checksum = zlib.adler32(payload, value)
-        self.assertIsInstance(checksum, int)
+    # TODO: https://docs.python.org/3/library/zlib.html
+    @given(
+        payload=st.lists(st.binary(), min_size=1, max_size=2),
+        checksum=st.just(1) | st.integers(),
+    )
+    def test_adler32(self, payload, checksum):
+        expected = zlib.adler32(b"".join(payload), checksum)
+        for piece in payload:
+            checksum = zlib.adler32(piece, checksum)
+            self.assertIsInstance(checksum, int)
+            self.assertLess(checksum, 2 ** 32)
+            self.assertGreaterEqual(checksum, 0)
+        self.assertEqual(expected, checksum)
 
     @given(
-        payload_piece_1=st.binary(),
-        payload_piece_2=st.binary(),
-        value=st.just(1) | st.integers(),
+        payload=st.lists(st.binary(), min_size=1, max_size=2),
+        checksum=st.just(1) | st.integers(),
     )
-    def test_adler32_two_part(self, payload_piece_1, payload_piece_2, value):
-        combined_checksum = zlib.adler32(payload_piece_1 + payload_piece_2, value)
-        checksum_part1 = zlib.adler32(payload_piece_1, value)
-        checksum = zlib.adler32(payload_piece_2, checksum_part1)
-        self.assertEqual(combined_checksum, checksum)
+    def test_crc32(self, payload, checksum):
+        expected = zlib.crc32(b"".join(payload), checksum)
+        for piece in payload:
+            checksum = zlib.crc32(piece, checksum)
+            self.assertIsInstance(checksum, int)
+            self.assertLess(checksum, 2 ** 32)
+            self.assertGreaterEqual(checksum, 0)
+        self.assertEqual(expected, checksum)
 
-    @given(payload=st.binary(), value=st.just(0) | st.integers())
-    def test_crc32(self, payload, value):
-        crc = zlib.crc32(payload, value)
-        self.assertIsInstance(crc, int)
-
-    @given(
-        payload_piece_1=st.binary(),
-        payload_piece_2=st.binary(),
-        value=st.just(0) | st.integers(),
-    )
-    def test_crc32_two_part(self, payload_piece_1, payload_piece_2, value):
-        combined_crc = zlib.crc32(payload_piece_1 + payload_piece_2, value)
-        crc_part1 = zlib.crc32(payload_piece_1, value)
-        crc = zlib.crc32(payload_piece_2, crc_part1)
-        self.assertEqual(combined_crc, crc)
-
+    # TODO: tests for incremental compression, wbits, strategy, zdict
     @given(
         payload=st.binary(),
         level=st.just(-1) | st.integers(0, 9),
