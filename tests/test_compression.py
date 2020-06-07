@@ -2,6 +2,7 @@ import bz2
 import gzip
 import lzma
 import unittest
+import zlib
 
 from hypothesis import HealthCheck, given, settings, strategies as st
 
@@ -120,4 +121,38 @@ class TestLZMA(unittest.TestCase):
 
 class TestZlib(unittest.TestCase):
     # TODO: https://docs.python.org/3/library/zlib.html
-    pass
+    @given(
+        payload=st.lists(st.binary(), min_size=1, max_size=2),
+        checksum=st.just(1) | st.integers(),
+    )
+    def test_adler32(self, payload, checksum):
+        expected = zlib.adler32(b"".join(payload), checksum)
+        for piece in payload:
+            checksum = zlib.adler32(piece, checksum)
+            self.assertIsInstance(checksum, int)
+            self.assertLess(checksum, 2 ** 32)
+            self.assertGreaterEqual(checksum, 0)
+        self.assertEqual(expected, checksum)
+
+    @given(
+        payload=st.lists(st.binary(), min_size=1, max_size=2),
+        checksum=st.just(1) | st.integers(),
+    )
+    def test_crc32(self, payload, checksum):
+        expected = zlib.crc32(b"".join(payload), checksum)
+        for piece in payload:
+            checksum = zlib.crc32(piece, checksum)
+            self.assertIsInstance(checksum, int)
+            self.assertLess(checksum, 2 ** 32)
+            self.assertGreaterEqual(checksum, 0)
+        self.assertEqual(expected, checksum)
+
+    # TODO: tests for incremental compression, wbits, strategy, zdict
+    @given(
+        payload=st.binary(),
+        level=st.just(-1) | st.integers(0, 9),
+        bufsize=st.just(zlib.DEF_BUF_SIZE) | st.integers(0, zlib.DEF_BUF_SIZE),
+    )
+    def test_compress_decompress_round_trip(self, payload, level, bufsize):
+        x = zlib.compress(payload, level=level)
+        self.assertEqual(payload, zlib.decompress(x, bufsize=bufsize))
