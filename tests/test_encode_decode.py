@@ -106,7 +106,7 @@ class TestBase64(unittest.TestCase):
 
 
 class TestBinASCII(unittest.TestCase):
-    @given(payload=st.binary(), backtick=st.booleans())
+    @given(payload=st.binary(max_size=45), backtick=st.booleans())
     def test_b2a_uu_a2b_uu_round_trip(self, payload, backtick):
         if sys.version_info[:2] >= (3, 7):
             x = binascii.b2a_uu(payload, backtick=backtick)
