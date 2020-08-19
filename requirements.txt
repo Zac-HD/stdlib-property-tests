@@ -5,14 +5,14 @@
 #    tox -e deps
 #
 attrs==19.3.0             # via hypothesis
-hypothesis[dateutil]==5.14.0  # via -r requirements.in, hypothesmith
-hypothesmith==0.1.2       # via -r requirements.in
-lark-parser==0.8.5        # via hypothesmith
-libcst==0.3.5             # via hypothesmith
+hypothesis[dateutil]==5.26.0  # via -r requirements.in, hypothesmith
+hypothesmith==0.1.4       # via -r requirements.in
+lark-parser==0.9.0        # via hypothesmith
+libcst==0.3.10            # via hypothesmith
 mypy-extensions==0.4.3    # via typing-inspect
 python-dateutil==2.8.1    # via hypothesis
 pyyaml==5.3.1             # via libcst
-six==1.14.0               # via python-dateutil
-sortedcontainers==2.1.0   # via hypothesis
+six==1.15.0               # via python-dateutil
+sortedcontainers==2.2.2   # via hypothesis
 typing-extensions==3.7.4.2  # via libcst, typing-inspect
 typing-inspect==0.6.0     # via libcst
