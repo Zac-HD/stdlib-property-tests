@@ -13,7 +13,7 @@ They're no magic bullet, but computer-assisted testing techniques routinely
 try inputs that humans wouldn't think of (or bother trying), and
 [turn up bugs that humans missed](https://twitter.com/pganssle/status/1193371087968591872).
 
-Specifically, we propose adding these tests to CPython's CI suite,
+Specifically, we [propose adding these tests to CPython's CI suite](https://github.com/python/steering-council/issues/65),
 and [gave a talk](https://us.pycon.org/2020/events/languagesummit/) at the
 [2020 Language Summit](https://pyfound.blogspot.com/2020/05/property-based-testing-for-python.html)
 to that effect.  Doing so would mean:
